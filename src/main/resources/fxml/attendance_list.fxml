@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox spacing="10" alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController">
+    <children>
+        <Label text="Lista prisustva (eksport)" />
+        <Button text="Export to PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
+    </children>
+</VBox>
+

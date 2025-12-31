@@ -2,6 +2,7 @@ package org.example.db;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class DbInit {
 
@@ -50,4 +51,3 @@ public class DbInit {
         }
     }
 }
-
