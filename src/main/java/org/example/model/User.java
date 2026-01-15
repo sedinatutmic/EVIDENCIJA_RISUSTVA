@@ -1,5 +1,6 @@
 package org.example.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class User {
@@ -9,6 +10,12 @@ public class User {
     private String qrValue;
     private boolean active;
     private LocalDateTime createdAt;
+
+    // new fields
+    private LocalDate birthDate;
+    private String address;
+    private String contact;
+    private Role role; // Praktikant or Volonter
 
     public User() {}
 
@@ -38,5 +45,17 @@ public class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-}
 
+    // new fields getters/setters
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+}

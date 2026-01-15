@@ -10,12 +10,12 @@
     <top>
         <MenuBar>
             <menus>
-                <Menu text="Navigate">
+                <Menu text="Navigacija">
                     <items>
                         <MenuItem fx:id="menuDashboard" text="Dashboard"/>
                         <MenuItem fx:id="menuQrScanner" text="QR Scanner"/>
-                        <MenuItem fx:id="menuUsers" text="Users"/>
-                        <MenuItem fx:id="menuAttendance" text="Attendance overview"/>
+                        <MenuItem fx:id="menuUsers" text="Korisnici"/>
+                        <MenuItem fx:id="menuAttendance" text="Prisustva"/>
                         <SeparatorMenuItem/>
                         <MenuItem fx:id="menuLogout" text="Logout"/>
                     </items>

@@ -6,19 +6,31 @@
     <padding>
         <Insets top="10" right="10" bottom="10" left="10" />
     </padding>
-    <Label text="Full Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+    <Label text="Ime i prezime:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
     <TextField fx:id="txtFullName" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
     <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
     <TextField fx:id="txtEmail" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-    <Label text="QR Value:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+    <Label text="QR vrijednost:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
     <TextField fx:id="txtQr" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
-    <Label text="Active:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-    <CheckBox fx:id="chkActive" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+    <Label text="Datum rodjenja:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+    <DatePicker fx:id="dpBirthDate" GridPane.rowIndex="3" GridPane.columnIndex="1" />
 
-    <HBox spacing="8" GridPane.rowIndex="4" GridPane.columnIndex="1" alignment="CENTER_RIGHT">
+    <Label text="Adresa:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+    <TextArea fx:id="txtAddress" prefRowCount="3" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
+    <Label text="Kontakt:" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+    <TextField fx:id="txtContact" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+
+    <Label text="Uloga:" GridPane.rowIndex="6" GridPane.columnIndex="0" />
+    <ComboBox fx:id="cbRole" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+
+    <Label text="Active:" GridPane.rowIndex="7" GridPane.columnIndex="0" />
+    <CheckBox fx:id="chkActive" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+
+    <HBox spacing="8" GridPane.rowIndex="8" GridPane.columnIndex="1" alignment="CENTER_RIGHT">
         <Button text="Cancel" onAction="#onCancel" />
         <Button text="Save" onAction="#onSave" />
     </HBox>

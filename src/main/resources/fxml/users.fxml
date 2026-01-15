@@ -5,19 +5,23 @@
     <children>
         <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
             <HBox spacing="8">
-                <Button text="New" fx:id="btnNew" />
-                <Button text="Edit" fx:id="btnEdit" />
-                <Button text="Delete" fx:id="btnDelete" />
+                <Button text="Dodaj korisnika" fx:id="btnNew" />
+                <Button text="Uredi korisnika" fx:id="btnEdit" />
+                <Button text="Obriši korisnika" fx:id="btnDelete" />
+                <Button text="Otvori profil" fx:id="btnOpenProfile" onAction="#onOpenProfile" />
             </HBox>
             <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn text="ID" fx:id="colId" />
-                    <TableColumn text="Full Name" fx:id="colFullName" />
+                    <TableColumn text="Ime i prezime" fx:id="colFullName" />
                     <TableColumn text="Email" fx:id="colEmail" />
                     <TableColumn text="QR" fx:id="colQr" />
+                    <TableColumn text="Datum rođenja" fx:id="colBirthDate" />
+                    <TableColumn text="Adresa" fx:id="colAddress" />
+                    <TableColumn text="Kontakt" fx:id="colContact" />
+                    <TableColumn text="Uloga" fx:id="colRole" />
                 </columns>
             </TableView>
         </VBox>
     </children>
 </AnchorPane>
-

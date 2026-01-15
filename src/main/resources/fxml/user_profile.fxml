@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<VBox spacing="10" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UserProfileController" prefWidth="600" prefHeight="400">
+    <HBox spacing="12">
+        <VBox spacing="8">
+            <ImageView fx:id="imgProfile" fitWidth="150" fitHeight="150" preserveRatio="true" />
+            <HBox spacing="6">
+                <Button text="Dodaj CV" fx:id="btnUploadCv" onAction="#onUploadCv" />
+                <Button text="Eksportuj u PDF" fx:id="btnExportPdf" onAction="#onExportPdf" />
+            </HBox>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="Ime i prezime:" />
+            <Label fx:id="lblFullName" />
+            <Label text="Email:" />
+            <Label fx:id="lblEmail" />
+            <Label text="QR:" />
+            <Label fx:id="lblQr" />
+            <Label text="Datum rođenja:" />
+            <Label fx:id="lblBirthDate" />
+            <Label text="Adresa:" />
+            <Label fx:id="lblAddress" wrapText="true" />
+            <Label text="Kontakt:" />
+            <Label fx:id="lblContact" />
+            <Label text="Uloga:" />
+            <Label fx:id="lblRole" />
+        </VBox>
+    </HBox>
+    <Label text="Historija prisustva" />
+    <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="ID" fx:id="colId" />
+            <TableColumn text="Datum" fx:id="colDate" />
+            <TableColumn text="Vrijeme prijave" fx:id="colCheckIn" />
+            <TableColumn text="Vrijeme odjave" fx:id="colCheckOut" />
+            <TableColumn text="Ukupno sati" fx:id="colTotalHours" />
+        </columns>
+    </TableView>
+</VBox>

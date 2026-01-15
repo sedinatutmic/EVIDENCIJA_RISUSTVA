@@ -3,8 +3,20 @@
 <?import javafx.scene.layout.*?>
 <VBox spacing="10" alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController">
     <children>
-        <Label text="Lista prisustva (eksport)" />
-        <Button text="Export to PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
+        <Label text="Sva prisustva" />
+        <HBox spacing="8">
+            <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
+            <Button text="Uredi" fx:id="editButton" onAction="#onEdit" />
+        </HBox>
+        <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn text="ID" fx:id="colId" />
+                <TableColumn text="Ime" fx:id="colName" />
+                <TableColumn text="Datum" fx:id="colDate" />
+                <TableColumn text="Vrijeme prijave" fx:id="colCheckIn" />
+                <TableColumn text="Vrijeme odjave" fx:id="colCheckOut" />
+                <TableColumn text="Ukupno sati" fx:id="colTotalHours" />
+            </columns>
+        </TableView>
     </children>
 </VBox>
-

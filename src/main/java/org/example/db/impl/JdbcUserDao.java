@@ -3,11 +3,13 @@ package org.example.db.impl;
 import org.example.db.DataSourceProvider;
 import org.example.db.dao.UserDao;
 import org.example.model.User;
+import org.example.model.Role;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByQr(String qrValue) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at FROM users WHERE qr_value = ?")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users WHERE qr_value = ?")) {
             ps.setString(1, qrValue);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -46,6 +48,20 @@ public class JdbcUserDao implements UserDao {
                 // fallback: leave null
             }
         }
+        // new fields
+        String birth = null;
+        try { birth = rs.getString("birth_date"); } catch (Exception ex) { /* ignore */ }
+        if (birth != null) {
+            try { u.setBirthDate(LocalDate.parse(birth)); } catch (Exception ex) { /* ignore */ }
+        }
+        try { u.setAddress(rs.getString("address")); } catch (Exception ex) { /* ignore */ }
+        try { u.setContact(rs.getString("contact")); } catch (Exception ex) { /* ignore */ }
+        try {
+            String roleStr = rs.getString("role");
+            if (roleStr != null) {
+                try { u.setRole(Role.valueOf(roleStr)); } catch (Exception ex) { u.setRole(null); }
+            }
+        } catch (Exception ex) { /* ignore */ }
         return u;
     }
 
@@ -53,7 +69,7 @@ public class JdbcUserDao implements UserDao {
     public List<User> findAll() throws Exception {
         List<User> list = new ArrayList<>();
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at FROM users ORDER BY id")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users ORDER BY id")) {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapRow(rs));
@@ -66,7 +82,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findById(long id) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at FROM users WHERE id = ?")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users WHERE id = ?")) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -80,11 +96,15 @@ public class JdbcUserDao implements UserDao {
     @Override
     public User create(User user) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("INSERT INTO users(full_name, email, qr_value, is_active) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = c.prepareStatement("INSERT INTO users(full_name, email, qr_value, is_active, birth_date, address, contact, role) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getQrValue());
             ps.setInt(4, user.isActive() ? 1 : 0);
+            ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            ps.setString(6, user.getAddress());
+            ps.setString(7, user.getContact());
+            ps.setString(8, user.getRole() == null ? null : user.getRole().name());
             int affected = ps.executeUpdate();
             if (affected == 0) {
                 throw new Exception("Creating user failed, no rows affected.");
@@ -101,12 +121,16 @@ public class JdbcUserDao implements UserDao {
     @Override
     public boolean update(User user) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("UPDATE users SET full_name = ?, email = ?, qr_value = ?, is_active = ? WHERE id = ?")) {
+             PreparedStatement ps = c.prepareStatement("UPDATE users SET full_name = ?, email = ?, qr_value = ?, is_active = ?, birth_date = ?, address = ?, contact = ?, role = ? WHERE id = ?")) {
             ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getQrValue());
             ps.setInt(4, user.isActive() ? 1 : 0);
-            ps.setLong(5, user.getId());
+            ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            ps.setString(6, user.getAddress());
+            ps.setString(7, user.getContact());
+            ps.setString(8, user.getRole() == null ? null : user.getRole().name());
+            ps.setLong(9, user.getId());
             int affected = ps.executeUpdate();
             return affected > 0;
         }

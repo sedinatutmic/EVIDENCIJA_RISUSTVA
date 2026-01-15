@@ -6,10 +6,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.model.User;
+import org.example.model.Role;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -21,6 +23,11 @@ public class UserDialogController {
     @FXML private TextField txtQr;
     @FXML private CheckBox chkActive;
 
+    @FXML private javafx.scene.control.DatePicker dpBirthDate;
+    @FXML private TextArea txtAddress;
+    @FXML private TextField txtContact;
+    @FXML private javafx.scene.control.ComboBox<Role> cbRole;
+
     private Stage stage;
     private User user;
     private boolean saved = false;
@@ -31,16 +38,29 @@ public class UserDialogController {
     }
 
     private void populateFields() {
+        // populate role choices
+        if (cbRole != null) {
+            cbRole.getItems().setAll(Role.values());
+        }
+
         if (user != null) {
             if (txtFullName != null) txtFullName.setText(user.getFullName());
             if (txtEmail != null) txtEmail.setText(user.getEmail());
             if (txtQr != null) txtQr.setText(user.getQrValue());
             if (chkActive != null) chkActive.setSelected(user.isActive());
+            if (dpBirthDate != null) dpBirthDate.setValue(user.getBirthDate());
+            if (txtAddress != null) txtAddress.setText(user.getAddress());
+            if (txtContact != null) txtContact.setText(user.getContact());
+            if (cbRole != null) cbRole.setValue(user.getRole());
         } else {
             if (txtFullName != null) txtFullName.setText("");
             if (txtEmail != null) txtEmail.setText("");
             if (txtQr != null) txtQr.setText("");
             if (chkActive != null) chkActive.setSelected(true);
+            if (dpBirthDate != null) dpBirthDate.setValue(null);
+            if (txtAddress != null) txtAddress.setText("");
+            if (txtContact != null) txtContact.setText("");
+            if (cbRole != null) cbRole.setValue(Role.Praktikant);
         }
     }
 
@@ -65,6 +85,12 @@ public class UserDialogController {
             user.setEmail(email == null ? null : email.trim());
             user.setQrValue(qr.trim());
             user.setActive(chkActive.isSelected());
+
+            // new fields
+            if (dpBirthDate != null) user.setBirthDate(dpBirthDate.getValue());
+            if (txtAddress != null) user.setAddress(txtAddress.getText());
+            if (txtContact != null) user.setContact(txtContact.getText());
+            if (cbRole != null) user.setRole(cbRole.getValue());
 
             saved = true;
             stage.close();

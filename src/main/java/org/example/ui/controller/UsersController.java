@@ -3,16 +3,23 @@ package org.example.ui.controller;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Window;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.example.model.User;
+import org.example.model.Role;
 import org.example.service.UserService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class UsersController {
@@ -20,14 +27,21 @@ public class UsersController {
     @FXML private Button btnNew;
     @FXML private Button btnEdit;
     @FXML private Button btnDelete;
+    @FXML private Button btnOpenProfile;
 
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Long> colId;
     @FXML private TableColumn<User, String> colFullName;
     @FXML private TableColumn<User, String> colEmail;
     @FXML private TableColumn<User, String> colQr;
+    @FXML private TableColumn<User, LocalDate> colBirthDate;
+    @FXML private TableColumn<User, String> colAddress;
+    @FXML private TableColumn<User, String> colContact;
+    @FXML private TableColumn<User, String> colRole;
 
     private final UserService userService = new UserService();
+
+    private static final DateTimeFormatter BIRTH_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @FXML
     public void initialize() {
@@ -37,9 +51,37 @@ public class UsersController {
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colQr.setCellValueFactory(new PropertyValueFactory<>("qrValue"));
 
+        // birth date: format LocalDate -> dd.MM.yyyy
+        colBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
+        colBirthDate.setCellFactory(c -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("");
+                } else {
+                    setText(BIRTH_FMT.format(item));
+                }
+            }
+        });
+
+        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colContact.setCellValueFactory(new PropertyValueFactory<>("contact"));
+
+        // role: show enum name
+        colRole.setCellValueFactory(cd -> {
+            User u = cd.getValue();
+            return new javafx.beans.property.SimpleStringProperty(u.getRole() == null ? "" : u.getRole().name());
+        });
+
         btnNew.setOnAction(e -> onNew());
         btnEdit.setOnAction(e -> onEdit());
         btnDelete.setOnAction(e -> onDelete());
+        btnOpenProfile.setOnAction(e -> onOpenProfile());
+
+        btnOpenProfile.setDisable(true);
+
+        usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> btnOpenProfile.setDisable(newV == null));
     }
 
     public void loadUsers() {
@@ -122,6 +164,26 @@ public class UsersController {
                 new Thread(t).start();
             }
         });
+    }
+
+    public void onOpenProfile() {
+        User sel = usersTable.getSelectionModel().getSelectedItem();
+        if (sel == null) return;
+        try {
+            URL u = getClass().getResource("/fxml/user_profile.fxml");
+            if (u == null) return;
+            FXMLLoader loader = new FXMLLoader(u);
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            UserProfileController ctrl = (UserProfileController) loader.getController();
+            ctrl.setUserId(sel.getId());
+            stage.setTitle("Profil: " + sel.getFullName());
+            stage.initOwner(usersTable.getScene().getWindow());
+            stage.show();
+        } catch (Exception e) {
+            showError("Error opening profile: " + e.getMessage());
+        }
     }
 
     private void showError(String msg) {
