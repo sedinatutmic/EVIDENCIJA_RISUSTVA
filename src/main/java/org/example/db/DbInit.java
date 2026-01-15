@@ -46,6 +46,9 @@ public class DbInit {
                     work_date TEXT NOT NULL,
                     check_in TEXT NOT NULL,
                     check_out TEXT,
+                    pause_check_in TEXT,
+                    pause_check_out TEXT,
+                    is_on_pause INTEGER DEFAULT 0,
                     FOREIGN KEY (user_id) REFERENCES users(id),
                     UNIQUE (user_id, work_date)
                 )
@@ -62,6 +65,17 @@ public class DbInit {
             if (!cols.contains("address")) st.execute("ALTER TABLE users ADD COLUMN address TEXT");
             if (!cols.contains("contact")) st.execute("ALTER TABLE users ADD COLUMN contact TEXT");
             if (!cols.contains("role")) st.execute("ALTER TABLE users ADD COLUMN role TEXT");
+
+            // Migration for attendance pause columns
+            Set<String> aCols = new HashSet<>();
+            try (ResultSet rs = st.executeQuery("PRAGMA table_info(attendance)")) {
+                while (rs.next()) {
+                    aCols.add(rs.getString("name"));
+                }
+            }
+            if (!aCols.contains("pause_check_in")) st.execute("ALTER TABLE attendance ADD COLUMN pause_check_in TEXT");
+            if (!aCols.contains("pause_check_out")) st.execute("ALTER TABLE attendance ADD COLUMN pause_check_out TEXT");
+            if (!aCols.contains("is_on_pause")) st.execute("ALTER TABLE attendance ADD COLUMN is_on_pause INTEGER DEFAULT 0");
 
             System.out.println("✅ Tabele su provjerene / kreirane");
 

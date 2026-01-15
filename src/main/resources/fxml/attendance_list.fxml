@@ -5,8 +5,10 @@
     <children>
         <Label text="Sva prisustva" />
         <HBox spacing="8">
+            <Button text="Dodaj prisustvo" fx:id="addButton" onAction="#onAdd" />
             <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
             <Button text="Uredi" fx:id="editButton" onAction="#onEdit" />
+            <Button text="Obriši prisustvo" fx:id="deleteButton" onAction="#onDelete" />
         </HBox>
         <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
             <columns>

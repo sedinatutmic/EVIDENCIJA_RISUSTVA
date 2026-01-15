@@ -15,43 +15,88 @@ public class AttendanceService {
     private final UserDao userDao = new JdbcUserDao();
 
     public String checkInOrOutByQr(String qrValue) {
+        return checkInOrOutByQr(qrValue, false);
+    }
+
+    // new method: handle pause toggling when pauseFlag=true
+    public String checkInOrOutByQr(String qrValue, boolean pauseFlag) {
         try {
             Optional<User> uo = userDao.findByQr(qrValue);
             if (uo.isEmpty()) {
                 return "Nepoznat korisnik za QR: " + qrValue;
             }
             User u = uo.get();
-            // Simplified approach: check if there's an attendance for today -> toggle check-in / check-out
             try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection();
-                 java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id, check_in, check_out FROM attendance WHERE user_id = ? AND work_date = ?")) {
+                 java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id, check_in, check_out, pause_check_in, pause_check_out, is_on_pause FROM attendance WHERE user_id = ? AND work_date = ?")) {
                 ps.setLong(1, u.getId());
                 String today = java.time.LocalDate.now().toString();
                 ps.setString(2, today);
                 try (java.sql.ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         long id = rs.getLong("id");
+                        String checkIn = rs.getString("check_in");
                         String checkOut = rs.getString("check_out");
-                        if (checkOut == null) {
-                            // perform check-out
-                            try (java.sql.PreparedStatement ups = conn.prepareStatement("UPDATE attendance SET check_out = ? WHERE id = ?")) {
-                                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                                ups.setString(1, now);
-                                ups.setLong(2, id);
-                                ups.executeUpdate();
-                                return "Odjavljeno: " + u.getFullName() + " u " + now;
+                        String pIn = null; try { pIn = rs.getString("pause_check_in"); } catch (Exception ex) {}
+                        String pOut = null; try { pOut = rs.getString("pause_check_out"); } catch (Exception ex) {}
+                        boolean onPause = rs.getInt("is_on_pause") == 1;
+
+                        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+                        if (pauseFlag) {
+                            // toggle pause on existing attendance row
+                            if (!onPause) {
+                                try (java.sql.PreparedStatement ups = conn.prepareStatement("UPDATE attendance SET pause_check_in = ?, is_on_pause = 1 WHERE id = ?")) {
+                                    ups.setString(1, now);
+                                    ups.setLong(2, id);
+                                    ups.executeUpdate();
+                                    return "Pauza počela: " + u.getFullName() + " u " + now;
+                                }
+                            } else {
+                                try (java.sql.PreparedStatement ups = conn.prepareStatement("UPDATE attendance SET pause_check_out = ?, is_on_pause = 0 WHERE id = ?")) {
+                                    ups.setString(1, now);
+                                    ups.setLong(2, id);
+                                    ups.executeUpdate();
+                                    return "Pauza završena: " + u.getFullName() + " u " + now;
+                                }
                             }
                         } else {
-                            return "Već ste odjavili danas.";
+                            // normal check-out if already checked-in and not paused
+                            if (checkIn != null && checkOut == null) {
+                                try (java.sql.PreparedStatement ups = conn.prepareStatement("UPDATE attendance SET check_out = ? WHERE id = ?")) {
+                                    ups.setString(1, now);
+                                    ups.setLong(2, id);
+                                    ups.executeUpdate();
+                                    return "Odjavljeno: " + u.getFullName() + " u " + now;
+                                }
+                            } else if (checkIn != null && checkOut != null) {
+                                return "Već ste odjavili danas.";
+                            } else {
+                                return "Ne postoji valjana radna evidencija za ovu operaciju.";
+                            }
                         }
                     } else {
-                        // perform check-in
-                        try (java.sql.PreparedStatement ins = conn.prepareStatement("INSERT INTO attendance(user_id, work_date, check_in) VALUES(?, ?, ?)", java.sql.Statement.RETURN_GENERATED_KEYS)) {
-                            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                            ins.setLong(1, u.getId());
-                            ins.setString(2, java.time.LocalDate.now().toString());
-                            ins.setString(3, now);
-                            ins.executeUpdate();
-                            return "Prijavljeno: " + u.getFullName() + " u " + now;
+                        // no attendance for today
+                        if (pauseFlag) {
+                            // start a row with check_in = now and pause started? Spec says pause toggles only for existing row -> we will create row and immediately set pause
+                            try (java.sql.PreparedStatement ins = conn.prepareStatement("INSERT INTO attendance(user_id, work_date, check_in, pause_check_in, is_on_pause) VALUES(?, ?, ?, ?, 1)", java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                ins.setLong(1, u.getId());
+                                ins.setString(2, java.time.LocalDate.now().toString());
+                                ins.setString(3, now); // check-in at same time
+                                ins.setString(4, now); // pause start
+                                ins.executeUpdate();
+                                return "Prijavljeno i pauza počela: " + u.getFullName() + " u " + now;
+                            }
+                        } else {
+                            // perform check-in
+                            try (java.sql.PreparedStatement ins = conn.prepareStatement("INSERT INTO attendance(user_id, work_date, check_in) VALUES(?, ?, ?)", java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                ins.setLong(1, u.getId());
+                                ins.setString(2, java.time.LocalDate.now().toString());
+                                ins.setString(3, now);
+                                ins.executeUpdate();
+                                return "Prijavljeno: " + u.getFullName() + " u " + now;
+                            }
                         }
                     }
                 }
@@ -69,6 +114,9 @@ public class AttendanceService {
         private String workDate;
         private String checkIn; // store as string for display
         private String checkOut;
+        private String pauseCheckIn;
+        private String pauseCheckOut;
+        private boolean isOnPause;
 
         public AttendanceRecord(long id, String userFullName, String workDate, String checkIn, String checkOut) {
             this.id = id;
@@ -83,6 +131,9 @@ public class AttendanceService {
         public String getWorkDate() { return workDate; }
         public String getCheckIn() { return checkIn; }
         public String getCheckOut() { return checkOut; }
+        public String getPauseCheckIn() { return pauseCheckIn; }
+        public String getPauseCheckOut() { return pauseCheckOut; }
+        public boolean isOnPause() { return isOnPause; }
 
         // compute total hours between checkIn and checkOut as H:MM, return empty string if not available
         public String getTotalHours() {
@@ -93,6 +144,17 @@ public class AttendanceService {
                 LocalDateTime out = LocalDateTime.parse(checkOut, fmt);
                 long minutes = java.time.Duration.between(in, out).toMinutes();
                 if (minutes < 0) return "";
+                // subtract pause if present
+                if (pauseCheckIn != null && pauseCheckOut != null) {
+                    try {
+                        LocalDateTime pin = LocalDateTime.parse(pauseCheckIn, fmt);
+                        LocalDateTime pout = LocalDateTime.parse(pauseCheckOut, fmt);
+                        long pmins = java.time.Duration.between(pin, pout).toMinutes();
+                        minutes -= Math.max(0, pmins);
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
                 long hours = minutes / 60;
                 long mins = minutes % 60;
                 return String.format("%d:%02d", hours, mins);
@@ -136,6 +198,17 @@ public class AttendanceService {
                 LocalDateTime out = LocalDateTime.parse(checkOut, fmt);
                 long minutes = java.time.Duration.between(in, out).toMinutes();
                 if (minutes < 0) return "";
+                // subtract pause
+                if (pauseCheckIn != null && pauseCheckOut != null) {
+                    try {
+                        LocalDateTime pin = LocalDateTime.parse(pauseCheckIn, fmt);
+                        LocalDateTime pout = LocalDateTime.parse(pauseCheckOut, fmt);
+                        long pmins = java.time.Duration.between(pin, pout).toMinutes();
+                        minutes -= Math.max(0, pmins);
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
                 long hours = minutes / 60;
                 long mins = minutes % 60;
                 return String.format("%dh i %dmin", hours, mins);
@@ -148,15 +221,22 @@ public class AttendanceService {
     public List<AttendanceRecord> listAllAttendances() throws Exception {
         List<AttendanceRecord> result = new ArrayList<>();
         try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, a.work_date, a.check_in, a.check_out, u.full_name FROM attendance a LEFT JOIN users u ON a.user_id = u.id ORDER BY a.work_date DESC, a.id DESC")) {
+             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, a.work_date, a.check_in, a.check_out, a.pause_check_in, a.pause_check_out, a.is_on_pause, u.full_name FROM attendance a LEFT JOIN users u ON a.user_id = u.id ORDER BY a.work_date DESC, a.id DESC")) {
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     long id = rs.getLong("id");
                     String workDate = rs.getString("work_date");
                     String checkIn = rs.getString("check_in");
                     String checkOut = rs.getString("check_out");
+                    String pauseIn = rs.getString("pause_check_in");
+                    String pauseOut = rs.getString("pause_check_out");
+                    boolean onPause = rs.getInt("is_on_pause") == 1;
                     String fullName = rs.getString("full_name");
-                    result.add(new AttendanceRecord(id, fullName == null ? "(unknown)" : fullName, workDate, checkIn, checkOut));
+                    AttendanceRecord ar = new AttendanceRecord(id, fullName == null ? "(unknown)" : fullName, workDate, checkIn, checkOut);
+                    ar.pauseCheckIn = pauseIn;
+                    ar.pauseCheckOut = pauseOut;
+                    ar.isOnPause = onPause;
+                    result.add(ar);
                 }
             }
         }
@@ -166,7 +246,7 @@ public class AttendanceService {
     public List<AttendanceRecord> listAttendancesForUser(long userId) throws Exception {
         List<AttendanceRecord> result = new ArrayList<>();
         try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id, work_date, check_in, check_out FROM attendance WHERE user_id = ? ORDER BY work_date DESC, id DESC")) {
+             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id, work_date, check_in, check_out, pause_check_in, pause_check_out, is_on_pause FROM attendance WHERE user_id = ? ORDER BY work_date DESC, id DESC")) {
             ps.setLong(1, userId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -174,7 +254,14 @@ public class AttendanceService {
                     String workDate = rs.getString("work_date");
                     String checkIn = rs.getString("check_in");
                     String checkOut = rs.getString("check_out");
-                    result.add(new AttendanceRecord(id, "", workDate, checkIn, checkOut));
+                    String pauseIn = rs.getString("pause_check_in");
+                    String pauseOut = rs.getString("pause_check_out");
+                    boolean onPause = rs.getInt("is_on_pause") == 1;
+                    AttendanceRecord ar = new AttendanceRecord(id, "", workDate, checkIn, checkOut);
+                    ar.pauseCheckIn = pauseIn;
+                    ar.pauseCheckOut = pauseOut;
+                    ar.isOnPause = onPause;
+                    result.add(ar);
                 }
             }
         }
@@ -187,6 +274,39 @@ public class AttendanceService {
             ps.setString(1, checkIn);
             ps.setString(2, checkOut);
             ps.setLong(3, id);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
+
+    // create attendance row (used by admin UI). If a row for the user and date already exists, update it.
+    public boolean createAttendance(long userId, String workDate, String checkIn, String checkOut) throws Exception {
+        try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection()) {
+            try (java.sql.PreparedStatement ins = conn.prepareStatement("INSERT INTO attendance(user_id, work_date, check_in, check_out) VALUES(?,?,?,?)")) {
+                ins.setLong(1, userId);
+                ins.setString(2, workDate);
+                ins.setString(3, checkIn);
+                ins.setString(4, checkOut);
+                int affected = ins.executeUpdate();
+                return affected > 0;
+            } catch (java.sql.SQLException ex) {
+                // likely UNIQUE constraint (attendance for user/date exists) - fallback to update
+                try (java.sql.PreparedStatement ups = conn.prepareStatement("UPDATE attendance SET check_in = ?, check_out = ? WHERE user_id = ? AND work_date = ?")) {
+                    ups.setString(1, checkIn);
+                    ups.setString(2, checkOut);
+                    ups.setLong(3, userId);
+                    ups.setString(4, workDate);
+                    int affected = ups.executeUpdate();
+                    return affected > 0;
+                }
+            }
+        }
+    }
+
+    public boolean deleteAttendance(long id) throws Exception {
+        try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement("DELETE FROM attendance WHERE id = ?")) {
+            ps.setLong(1, id);
             int affected = ps.executeUpdate();
             return affected > 0;
         }

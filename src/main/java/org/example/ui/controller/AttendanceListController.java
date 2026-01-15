@@ -7,19 +7,25 @@ import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.example.service.AttendanceService;
 import org.example.util.PdfExporter;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import javafx.util.StringConverter;
+import javafx.util.converter.LocalTimeStringConverter;
 
 public class AttendanceListController {
 
     @FXML private Button exportPdfButton;
     @FXML private Button editButton;
+    @FXML private Button deleteButton;
+    @FXML private Button addButton;
 
     @FXML private TableView<AttendanceService.AttendanceRecord> attendanceTable;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, Long> colId;
@@ -32,6 +38,7 @@ public class AttendanceListController {
     private final AttendanceService attendanceService = new AttendanceService();
 
     private static final DateTimeFormatter DB_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     @FXML
     public void initialize() {
@@ -46,6 +53,18 @@ public class AttendanceListController {
 
         exportPdfButton.setOnAction(e -> onExportPdf());
         editButton.setOnAction(e -> onEdit());
+        // wire delete button and disable when nothing selected
+        if (deleteButton != null) {
+            deleteButton.setOnAction(e -> onDelete());
+            deleteButton.setDisable(true);
+        }
+        if (addButton != null) {
+            addButton.setOnAction(e -> onAdd());
+        }
+
+        attendanceTable.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (deleteButton != null) deleteButton.setDisable(newV == null);
+        });
 
         // load attendances when view initializes
         loadAttendances();
@@ -151,6 +170,156 @@ public class AttendanceListController {
         });
     }
 
+    @FXML
+    public void onDelete() {
+        AttendanceService.AttendanceRecord sel = attendanceTable.getSelectionModel().getSelectedItem();
+        if (sel == null) {
+            Alert a = new Alert(Alert.AlertType.INFORMATION);
+            a.setHeaderText(null);
+            a.setContentText("Select an attendance row to delete");
+            a.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setHeaderText(null);
+        confirm.setContentText("Obriši odabrano prisustvo?");
+        Window ownerWindow = attendanceTable != null && attendanceTable.getScene() != null ? attendanceTable.getScene().getWindow() : null;
+        if (ownerWindow != null) confirm.initOwner(ownerWindow);
+        confirm.showAndWait().ifPresent(resp -> {
+            if (resp == ButtonType.OK) {
+                Task<Boolean> t = new Task<>() {
+                    @Override
+                    protected Boolean call() throws Exception {
+                        return attendanceService.deleteAttendance(sel.getId());
+                    }
+                };
+                t.setOnSucceeded(e -> loadAttendances());
+                t.setOnFailed(e -> {
+                    Throwable ex = t.getException();
+                    ex.printStackTrace();
+                    Alert a = new Alert(Alert.AlertType.ERROR);
+                    a.setHeaderText("Unable to delete attendance");
+                    a.setContentText(ex.getMessage());
+                    a.showAndWait();
+                });
+                new Thread(t).start();
+            }
+        });
+    }
+
+    @FXML
+    public void onAdd() {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Dodaj prisustvo");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(8);
+        grid.setVgap(8);
+
+        javafx.scene.control.ComboBox<org.example.model.User> cbUser = new javafx.scene.control.ComboBox<>();
+        javafx.scene.control.DatePicker dpDate = new javafx.scene.control.DatePicker(java.time.LocalDate.now());
+        // use Spinner<LocalTime> as time pickers
+        Spinner<LocalTime> spCheckIn = createTimeSpinner(java.time.LocalTime.now().withSecond(0).withMinute(0));
+        Spinner<LocalTime> spCheckOut = createTimeSpinner(java.time.LocalTime.now().withSecond(0).withMinute(0));
+        spCheckOut.setEditable(true);
+
+        grid.add(new Label("Korisnik:"), 0, 0);
+        grid.add(cbUser, 1, 0);
+        grid.add(new Label("Datum (yyyy-MM-dd):"), 0, 1);
+        grid.add(dpDate, 1, 1);
+        grid.add(new Label("Check-in (HH:mm):"), 0, 2);
+        grid.add(spCheckIn, 1, 2);
+        grid.add(new Label("Check-out (HH:mm, optional):"), 0, 3);
+        grid.add(spCheckOut, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // load users into combobox
+        Task<List<org.example.model.User>> loadUsers = new Task<>() {
+            @Override
+            protected List<org.example.model.User> call() throws Exception {
+                return new org.example.service.UserService().listUsers();
+            }
+        };
+        loadUsers.setOnSucceeded(e -> cbUser.getItems().setAll(loadUsers.getValue()));
+        loadUsers.setOnFailed(e -> {
+            cbUser.setDisable(true);
+        });
+        new Thread(loadUsers).start();
+
+        // validation: enable OK only when user selected and check-in present
+        Node okButton = dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true);
+        Runnable validate = () -> {
+            boolean ok = cbUser.getValue() != null && spCheckIn.getValue() != null;
+            okButton.setDisable(!ok);
+        };
+        cbUser.valueProperty().addListener((o, oldV, newV) -> validate.run());
+        spCheckIn.valueProperty().addListener((o, oldV, newV) -> validate.run());
+
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                org.example.model.User u = cbUser.getValue();
+                java.time.LocalDate date = dpDate.getValue();
+                LocalTime inTime = spCheckIn.getValue();
+                LocalTime outTime = spCheckOut.getValue();
+                String inTs = date.toString() + " " + formatTimeWithSeconds(inTime);
+                String outTs = (outTime == null) ? null : date.toString() + " " + formatTimeWithSeconds(outTime);
+
+                Task<Boolean> t = new Task<>() {
+                    @Override
+                    protected Boolean call() throws Exception {
+                        return attendanceService.createAttendance(u.getId(), date.toString(), inTs, outTs);
+                    }
+                };
+                t.setOnSucceeded(evt -> loadAttendances());
+                t.setOnFailed(evt -> {
+                    Throwable ex = t.getException();
+                    ex.printStackTrace();
+                    Alert a = new Alert(Alert.AlertType.ERROR);
+                    a.setHeaderText("Unable to create attendance");
+                    a.setContentText(ex.getMessage());
+                    a.showAndWait();
+                });
+                new Thread(t).start();
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+    }
+
+    private Spinner<LocalTime> createTimeSpinner(LocalTime initial) {
+        // spinner increments/decrements by 1 minute
+        SpinnerValueFactory<LocalTime> vf = new SpinnerValueFactory<LocalTime>() {
+            {
+                setConverter(new LocalTimeStringConverter(TIME_FMT, null));
+                setValue(initial);
+            }
+            @Override
+            public void decrement(int steps) {
+                setValue(getValue().minusMinutes(steps));
+            }
+            @Override
+            public void increment(int steps) {
+                setValue(getValue().plusMinutes(steps));
+            }
+        };
+        Spinner<LocalTime> sp = new Spinner<>(vf);
+        sp.setEditable(true);
+        // ensure text input parses
+        TextFormatter<LocalTime> formatter = new TextFormatter<>(new LocalTimeStringConverter(TIME_FMT, null));
+        sp.getEditor().setText(TIME_FMT.format(initial));
+        return sp;
+    }
+
+    private String formatTimeWithSeconds(LocalTime t) {
+        if (t == null) return "00:00:00";
+        return t.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+    }
+
     private boolean isValidTimestamp(String s) {
         if (s == null) return false;
         try {
@@ -159,6 +328,21 @@ public class AttendanceListController {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean isValidTime(String s) {
+        if (s == null) return false;
+        try {
+            java.time.LocalTime.parse(s, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    private String normalizeTime(String t) {
+        // expects HH:mm, return HH:mm:ss
+        if (t == null || t.isBlank()) return "00:00:00";
+        if (t.length() == 5) return t + ":00";
+        return t;
     }
 
     @FXML
