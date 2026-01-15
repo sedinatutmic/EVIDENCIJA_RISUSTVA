@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UsersController">
+    <children>
+        <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+            <HBox spacing="8">
+                <Button text="New" fx:id="btnNew" />
+                <Button text="Edit" fx:id="btnEdit" />
+                <Button text="Delete" fx:id="btnDelete" />
+            </HBox>
+            <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn text="ID" fx:id="colId" />
+                    <TableColumn text="Full Name" fx:id="colFullName" />
+                    <TableColumn text="Email" fx:id="colEmail" />
+                    <TableColumn text="QR" fx:id="colQr" />
+                </columns>
+            </TableView>
+        </VBox>
+    </children>
+</AnchorPane>
+

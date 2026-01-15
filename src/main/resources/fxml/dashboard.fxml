@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.controller.DashboardController">
+
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="Navigate">
+                    <items>
+                        <MenuItem fx:id="menuDashboard" text="Dashboard"/>
+                        <MenuItem fx:id="menuQrScanner" text="QR Scanner"/>
+                        <MenuItem fx:id="menuUsers" text="Users"/>
+                        <MenuItem fx:id="menuAttendance" text="Attendance overview"/>
+                        <SeparatorMenuItem/>
+                        <MenuItem fx:id="menuLogout" text="Logout"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentPane">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+        </StackPane>
+    </center>
+
+</BorderPane>

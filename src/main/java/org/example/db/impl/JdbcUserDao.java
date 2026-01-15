@@ -7,8 +7,11 @@ import org.example.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class JdbcUserDao implements UserDao {
@@ -20,25 +23,102 @@ public class JdbcUserDao implements UserDao {
             ps.setString(1, qrValue);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    User u = new User();
-                    u.setId(rs.getLong("id"));
-                    u.setFullName(rs.getString("full_name"));
-                    u.setEmail(rs.getString("email"));
-                    u.setQrValue(rs.getString("qr_value"));
-                    u.setActive(rs.getInt("is_active") == 1);
-                    String created = rs.getString("created_at");
-                    if (created != null) {
-                        try {
-                            u.setCreatedAt(LocalDateTime.parse(created, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                        } catch (Exception ex) {
-                            // fallback: leave null
-                        }
-                    }
+                    User u = mapRow(rs);
                     return Optional.of(u);
                 }
                 return Optional.empty();
             }
         }
     }
-}
 
+    private User mapRow(ResultSet rs) throws Exception {
+        User u = new User();
+        u.setId(rs.getLong("id"));
+        u.setFullName(rs.getString("full_name"));
+        u.setEmail(rs.getString("email"));
+        u.setQrValue(rs.getString("qr_value"));
+        u.setActive(rs.getInt("is_active") == 1);
+        String created = rs.getString("created_at");
+        if (created != null) {
+            try {
+                u.setCreatedAt(LocalDateTime.parse(created, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            } catch (Exception ex) {
+                // fallback: leave null
+            }
+        }
+        return u;
+    }
+
+    @Override
+    public List<User> findAll() throws Exception {
+        List<User> list = new ArrayList<>();
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at FROM users ORDER BY id")) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public Optional<User> findById(long id) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at FROM users WHERE id = ?")) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
+    @Override
+    public User create(User user) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("INSERT INTO users(full_name, email, qr_value, is_active) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getQrValue());
+            ps.setInt(4, user.isActive() ? 1 : 0);
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                throw new Exception("Creating user failed, no rows affected.");
+            }
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    user.setId(keys.getLong(1));
+                }
+            }
+            return user;
+        }
+    }
+
+    @Override
+    public boolean update(User user) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("UPDATE users SET full_name = ?, email = ?, qr_value = ?, is_active = ? WHERE id = ?")) {
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getQrValue());
+            ps.setInt(4, user.isActive() ? 1 : 0);
+            ps.setLong(5, user.getId());
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
+
+    @Override
+    public boolean delete(long id) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM users WHERE id = ?")) {
+            ps.setLong(1, id);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
+}

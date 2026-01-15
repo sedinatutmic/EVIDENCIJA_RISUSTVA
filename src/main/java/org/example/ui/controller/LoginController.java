@@ -37,17 +37,18 @@ public class LoginController {
         if (ok) {
             messageLabel.setText("Uspješno prijavljeni");
             try {
-                URL fxmlUrl = getClass().getResource("/fxml/qrscan.fxml");
+                // IMPORTANT: after login we must open the Admin Dashboard, not the QR scanner.
+                URL fxmlUrl = getClass().getResource("/fxml/dashboard.fxml");
                 if (fxmlUrl == null) {
-                    String msg = "FXML resource not found: /fxml/qrscan.fxml. Make sure the file exists on the classpath.";
+                    String msg = "FXML resource not found: /fxml/dashboard.fxml. Make sure the file exists on the classpath.";
                     messageLabel.setText("Greška pri otvaranju prozora: " + msg);
                     System.err.println(msg);
                     return;
                 }
                 Parent root = FXMLLoader.load(fxmlUrl);
                 Stage stage = new Stage();
-                stage.setTitle("Skeniranje QR koda");
-                stage.setScene(new Scene(root, 500, 300));
+                stage.setTitle("Admin Dashboard");
+                stage.setScene(new Scene(root, 800, 600));
                 stage.show();
 
                 // close/hide current window
