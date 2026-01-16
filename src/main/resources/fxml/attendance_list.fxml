@@ -16,6 +16,8 @@
                 <TableColumn text="Ime" fx:id="colName" />
                 <TableColumn text="Datum" fx:id="colDate" />
                 <TableColumn text="Vrijeme prijave" fx:id="colCheckIn" />
+                <TableColumn text="Početak pauze" fx:id="colPauseIn" />
+                <TableColumn text="Kraj pauze" fx:id="colPauseOut" />
                 <TableColumn text="Vrijeme odjave" fx:id="colCheckOut" />
                 <TableColumn text="Ukupno sati" fx:id="colTotalHours" />
             </columns>

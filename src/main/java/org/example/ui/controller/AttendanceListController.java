@@ -32,6 +32,8 @@ public class AttendanceListController {
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colName;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colDate;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colCheckIn;
+    @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colPauseIn;
+    @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colPauseOut;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colCheckOut;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colTotalHours;
 
@@ -47,8 +49,10 @@ public class AttendanceListController {
         colDate.setCellValueFactory(new PropertyValueFactory<>("workDate"));
         // show only HH:mm in the table
         colCheckIn.setCellValueFactory(new PropertyValueFactory<>("checkInTime"));
+        colPauseIn.setCellValueFactory(new PropertyValueFactory<>("pauseCheckInTime"));
+        colPauseOut.setCellValueFactory(new PropertyValueFactory<>("pauseCheckOutTime"));
         colCheckOut.setCellValueFactory(new PropertyValueFactory<>("checkOutTime"));
-        // show H:MM in table
+        // show HH:mm in table
         colTotalHours.setCellValueFactory(new PropertyValueFactory<>("totalHours"));
 
         exportPdfButton.setOnAction(e -> onExportPdf());

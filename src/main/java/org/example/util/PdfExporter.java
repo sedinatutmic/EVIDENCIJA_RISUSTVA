@@ -29,16 +29,18 @@ public class PdfExporter {
         List<String[]> rows = new ArrayList<>();
         try (Connection conn = DataSourceProvider.getConnection();
              Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT a.id, u.full_name, a.work_date, a.check_in, a.check_out FROM attendance a JOIN users u ON u.id = a.user_id ORDER BY a.work_date, u.full_name")) {
+             ResultSet rs = st.executeQuery("SELECT a.id, u.full_name, a.work_date, a.check_in, a.check_out, a.pause_check_in, a.pause_check_out FROM attendance a JOIN users u ON u.id = a.user_id ORDER BY a.work_date, u.full_name")) {
             while (rs.next()) {
                 String id = String.valueOf(rs.getLong(1));
                 String name = rs.getString(2);
                 String date = rs.getString(3);
                 String ci = rs.getString(4);
                 String co = rs.getString(5);
+                String pauseCi = rs.getString(6);
+                String pauseCo = rs.getString(7);
                 String ciTime = formatTime(ci);
                 String coTime = formatTime(co);
-                String total = formatTotal(ci, co);
+                String total = formatTotalWithPauses(ci, co, pauseCi, pauseCo);
                 rows.add(new String[]{id, name, date, ciTime, coTime, total});
             }
         }
@@ -99,7 +101,7 @@ public class PdfExporter {
     public static void exportAttendanceForUser(java.io.File dest, long userId) throws Exception {
         List<String[]> rows = new ArrayList<>();
         try (Connection conn = DataSourceProvider.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, u.full_name, a.work_date, a.check_in, a.check_out FROM attendance a JOIN users u ON u.id = a.user_id WHERE a.user_id = ? ORDER BY a.work_date DESC")) {
+             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, u.full_name, a.work_date, a.check_in, a.check_out, a.pause_check_in, a.pause_check_out FROM attendance a JOIN users u ON u.id = a.user_id WHERE a.user_id = ? ORDER BY a.work_date DESC")) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -108,9 +110,11 @@ public class PdfExporter {
                     String date = rs.getString(3);
                     String ci = rs.getString(4);
                     String co = rs.getString(5);
+                    String pauseCi = rs.getString(6);
+                    String pauseCo = rs.getString(7);
                     String ciTime = formatTime(ci);
                     String coTime = formatTime(co);
-                    String total = formatTotal(ci, co);
+                    String total = formatTotalWithPauses(ci, co, pauseCi, pauseCo);
                     rows.add(new String[]{id, name, date, ciTime, coTime, total});
                 }
             }
@@ -179,12 +183,22 @@ public class PdfExporter {
         }
     }
 
-    private static String formatTotal(String ci, String co) {
+    private static String formatTotalWithPauses(String ci, String co, String pauseCi, String pauseCo) {
         if (ci == null || co == null) return "";
         try {
             LocalDateTime in = LocalDateTime.parse(ci, DB_FMT);
             LocalDateTime out = LocalDateTime.parse(co, DB_FMT);
             long minutes = Duration.between(in, out).toMinutes();
+            if (pauseCi != null && pauseCo != null) {
+                try {
+                    LocalDateTime pIn = LocalDateTime.parse(pauseCi, DB_FMT);
+                    LocalDateTime pOut = LocalDateTime.parse(pauseCo, DB_FMT);
+                    long pMinutes = Duration.between(pIn, pOut).toMinutes();
+                    minutes -= pMinutes;
+                } catch (Exception ex) {
+                    // ignore parsing pause; treat as no pause
+                }
+            }
             if (minutes < 0) return "";
             long hours = minutes / 60;
             long mins = minutes % 60;

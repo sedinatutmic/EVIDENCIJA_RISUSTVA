@@ -108,6 +108,18 @@ public class AttendanceService {
         }
     }
 
+    // Helper: interpret textual service response and decide if operation succeeded (DB write completed)
+    public boolean isSuccessfulResponse(String serviceMessage) {
+        if (serviceMessage == null) return false;
+        String s = serviceMessage.trim();
+        // known failure prefixes/messages in Croatian
+        if (s.startsWith("Greška")) return false;
+        if (s.startsWith("Nepoznat")) return false;
+        if (s.contains("Ne postoji")) return false;
+        if (s.contains("Već ste")) return false;
+        return true;
+    }
+
     public static class AttendanceRecord {
         private long id;
         private String userFullName;
@@ -117,6 +129,7 @@ public class AttendanceService {
         private String pauseCheckIn;
         private String pauseCheckOut;
         private boolean isOnPause;
+        private String userRole;
 
         public AttendanceRecord(long id, String userFullName, String workDate, String checkIn, String checkOut) {
             this.id = id;
@@ -134,8 +147,10 @@ public class AttendanceService {
         public String getPauseCheckIn() { return pauseCheckIn; }
         public String getPauseCheckOut() { return pauseCheckOut; }
         public boolean isOnPause() { return isOnPause; }
+        public String getUserRole() { return userRole; }
+        public void setUserRole(String userRole) { this.userRole = userRole; }
 
-        // compute total hours between checkIn and checkOut as H:MM, return empty string if not available
+        // compute total hours between checkIn and checkOut as HH:mm, return empty string if not available
         public String getTotalHours() {
             if (checkIn == null || checkOut == null) return "";
             try {
@@ -157,7 +172,7 @@ public class AttendanceService {
                 }
                 long hours = minutes / 60;
                 long mins = minutes % 60;
-                return String.format("%d:%02d", hours, mins);
+                return String.format("%02d:%02d", hours, mins);
             } catch (Exception e) {
                 return "";
             }
@@ -187,6 +202,28 @@ public class AttendanceService {
             } catch (Exception e) {
                 return "";
             }
+        }
+
+        // Return pause check-in formatted as HH:mm or empty string
+        public String getPauseCheckInTime() {
+            if (pauseCheckIn == null) return "";
+            try {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter out = DateTimeFormatter.ofPattern("HH:mm");
+                LocalDateTime p = LocalDateTime.parse(pauseCheckIn, fmt);
+                return out.format(p);
+            } catch (Exception e) { return ""; }
+        }
+
+        // Return pause check-out formatted as HH:mm or empty string
+        public String getPauseCheckOutTime() {
+            if (pauseCheckOut == null) return "";
+            try {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter out = DateTimeFormatter.ofPattern("HH:mm");
+                LocalDateTime p = LocalDateTime.parse(pauseCheckOut, fmt);
+                return out.format(p);
+            } catch (Exception e) { return ""; }
         }
 
         // Return total hours formatted as 'Xh i Ymin' or empty
@@ -221,7 +258,7 @@ public class AttendanceService {
     public List<AttendanceRecord> listAllAttendances() throws Exception {
         List<AttendanceRecord> result = new ArrayList<>();
         try (java.sql.Connection conn = org.example.db.DataSourceProvider.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, a.work_date, a.check_in, a.check_out, a.pause_check_in, a.pause_check_out, a.is_on_pause, u.full_name FROM attendance a LEFT JOIN users u ON a.user_id = u.id ORDER BY a.work_date DESC, a.id DESC")) {
+             java.sql.PreparedStatement ps = conn.prepareStatement("SELECT a.id, a.work_date, a.check_in, a.check_out, a.pause_check_in, a.pause_check_out, a.is_on_pause, u.full_name, u.role FROM attendance a LEFT JOIN users u ON a.user_id = u.id ORDER BY a.work_date DESC, a.id DESC")) {
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     long id = rs.getLong("id");
@@ -232,10 +269,12 @@ public class AttendanceService {
                     String pauseOut = rs.getString("pause_check_out");
                     boolean onPause = rs.getInt("is_on_pause") == 1;
                     String fullName = rs.getString("full_name");
+                    String role = rs.getString("role");
                     AttendanceRecord ar = new AttendanceRecord(id, fullName == null ? "(unknown)" : fullName, workDate, checkIn, checkOut);
                     ar.pauseCheckIn = pauseIn;
                     ar.pauseCheckOut = pauseOut;
                     ar.isOnPause = onPause;
+                    ar.setUserRole(role);
                     result.add(ar);
                 }
             }

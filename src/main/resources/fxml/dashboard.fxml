@@ -7,22 +7,19 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.example.ui.controller.DashboardController">
 
-    <top>
-        <MenuBar>
-            <menus>
-                <Menu text="Navigacija">
-                    <items>
-                        <MenuItem fx:id="menuDashboard" text="Dashboard"/>
-                        <MenuItem fx:id="menuQrScanner" text="QR Scanner"/>
-                        <MenuItem fx:id="menuUsers" text="Korisnici"/>
-                        <MenuItem fx:id="menuAttendance" text="Prisustva"/>
-                        <SeparatorMenuItem/>
-                        <MenuItem fx:id="menuLogout" text="Logout"/>
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-    </top>
+    <left>
+        <!-- Vertical sidebar navigation -->
+        <VBox fx:id="sidebar" spacing="8" prefWidth="200" style="-fx-background-color: #89CFF0; -fx-padding: 10;">
+            <children>
+                <Button fx:id="menuDashboard" text="Dashboard" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+                <Button fx:id="menuQrScanner" text="QR Scanner" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+                <Button fx:id="menuUsers" text="Korisnici" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+                <Button fx:id="menuAttendance" text="Prisustva" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Button fx:id="menuLogout" text="Logout" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+            </children>
+        </VBox>
+    </left>
 
     <center>
         <StackPane fx:id="contentPane">

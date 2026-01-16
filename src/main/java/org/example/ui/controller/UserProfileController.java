@@ -38,6 +38,8 @@ public class UserProfileController {
     @FXML private TableColumn<AttendanceService.AttendanceRecord, Long> colId;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colDate;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colCheckIn;
+    @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colPauseIn;
+    @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colPauseOut;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colCheckOut;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, String> colTotalHours;
 
@@ -53,6 +55,8 @@ public class UserProfileController {
         colId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
         colDate.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("workDate"));
         colCheckIn.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("checkInTime"));
+        colPauseIn.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("pauseCheckInTime"));
+        colPauseOut.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("pauseCheckOutTime"));
         colCheckOut.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("checkOutTime"));
         colTotalHours.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("totalHours"));
 

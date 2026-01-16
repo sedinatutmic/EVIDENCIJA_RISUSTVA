@@ -3,31 +3,64 @@ package org.example.ui.controller;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 
 public class DashboardController {
 
-    @FXML private MenuItem menuDashboard;
-    @FXML private MenuItem menuQrScanner;
-    @FXML private MenuItem menuUsers;
-    @FXML private MenuItem menuAttendance;
-    @FXML private MenuItem menuLogout;
+    @FXML private VBox sidebar;
+    @FXML private Button menuDashboard;
+    @FXML private Button menuQrScanner;
+    @FXML private Button menuUsers;
+    @FXML private Button menuAttendance;
+    @FXML private Button menuLogout;
 
     @FXML private StackPane contentPane;
 
     @FXML
     public void initialize() {
-        // load default dashboard view (could be a simple placeholder)
+        // load default dashboard view
         loadDashboardView();
 
-        menuDashboard.setOnAction(e -> loadDashboardView());
-        menuQrScanner.setOnAction(e -> loadQrScannerView());
-        menuUsers.setOnAction(e -> loadUsersView());
-        menuAttendance.setOnAction(e -> loadAttendanceView());
+        menuDashboard.setOnAction(e -> { setActive(menuDashboard); loadDashboardView(); });
+        menuQrScanner.setOnAction(e -> { setActive(menuQrScanner); loadQrScannerView(); });
+        menuUsers.setOnAction(e -> { setActive(menuUsers); loadUsersView(); });
+        menuAttendance.setOnAction(e -> { setActive(menuAttendance); loadAttendanceView(); });
         menuLogout.setOnAction(e -> onLogout());
+
+        // simple hover effect via style
+        addHoverEffect(menuDashboard);
+        addHoverEffect(menuQrScanner);
+        addHoverEffect(menuUsers);
+        addHoverEffect(menuAttendance);
+        addHoverEffect(menuLogout);
+
+        // set initial active
+        setActive(menuDashboard);
+    }
+
+    private void setActive(Button btn) {
+        // clear active style from all
+        if (btn != null && btn.getParent() != null) {
+            for (Node n : btn.getParent().getChildrenUnmodifiable()) {
+                if (n instanceof Button) n.getStyleClass().remove("sidebar-active");
+            }
+            btn.getStyleClass().add("sidebar-active");
+        }
+    }
+
+    private void addHoverEffect(Button btn) {
+        btn.hoverProperty().addListener((obs, oldV, newV) -> {
+            if (newV) {
+                btn.setStyle(btn.getStyle() + " -fx-background-color: rgba(255,255,255,0.06);");
+            } else {
+                // remove the hover background by resetting style (keep base style intact)
+                btn.setStyle(btn.getStyle().replace(" -fx-background-color: rgba(255,255,255,0.06);", ""));
+            }
+        });
     }
 
     private void clearContent() {
@@ -36,14 +69,11 @@ public class DashboardController {
 
     private void loadDashboardView() {
         clearContent();
-        // simple placeholder
         try {
-            URL u = getClass().getResource("/fxml/attendance_list.fxml");
+            URL u = getClass().getResource("/fxml/dashboard_cards.fxml");
             if (u != null) {
                 Node n = FXMLLoader.load(u);
                 contentPane.getChildren().add(n);
-            } else {
-                // fallback: empty
             }
         } catch (Exception ex) {
             ex.printStackTrace();

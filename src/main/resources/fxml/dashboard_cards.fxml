@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.DashboardCardsController" fitToWidth="true">
+    <content>
+        <VBox spacing="12">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
+            <children>
+                <Label text="Dashboard" style="-fx-font-size:20px; -fx-font-weight:bold;" />
+                <FlowPane fx:id="cardsPane" hgap="12" vgap="12" prefWrapLength="800">
+                    <!-- Cards will be defined here with fx:id so controller can populate -->
+                    <children>
+                        <!-- Total Users Card -->
+                        <VBox spacing="8" style="-fx-background-color: #ffffff; -fx-padding:12; -fx-border-color: #e0e0e0; -fx-border-radius:6; -fx-background-radius:6;" prefWidth="220">
+                            <Label text="Ukupno korisnika" style="-fx-font-weight:bold;" />
+                            <Label fx:id="lblTotalUsers" text="--" style="-fx-font-size:24px;" />
+                        </VBox>
+
+                        <!-- Currently Signed-in Users Card -->
+                        <VBox spacing="8" style="-fx-background-color: #ffffff; -fx-padding:12; -fx-border-color: #e0e0e0; -fx-border-radius:6; -fx-background-radius:6;" prefWidth="360">
+                            <Label text="Trenutno prijavljeni" style="-fx-font-weight:bold;" />
+                            <ListView fx:id="listSignedIn" prefHeight="140" />
+                        </VBox>
+
+                        <!-- Today's Attendance Summary -->
+                        <VBox spacing="8" style="-fx-background-color: #ffffff; -fx-padding:12; -fx-border-color: #e0e0e0; -fx-border-radius:6; -fx-background-radius:6;" prefWidth="220">
+                            <Label text="Današnje prijave" style="-fx-font-weight:bold;" />
+                            <Label fx:id="lblTodayCheckins" text="--" style="-fx-font-size:24px;" />
+                        </VBox>
+
+                        <!-- Recent Activity -->
+                        <VBox spacing="8" style="-fx-background-color: #ffffff; -fx-padding:12; -fx-border-color: #e0e0e0; -fx-border-radius:6; -fx-background-radius:6;" prefWidth="520">
+                            <Label text="Nedavne prijave" style="-fx-font-weight:bold;" />
+                            <ListView fx:id="listRecent" prefHeight="180" />
+                        </VBox>
+
+                        <!-- Optional Controls -->
+                        <VBox spacing="8" style="-fx-background-color: #ffffff; -fx-padding:12; -fx-border-color: #e0e0e0; -fx-border-radius:6; -fx-background-radius:6; -fx-alignment:center;" prefWidth="220">
+                            <Label text="Controls" style="-fx-font-weight:bold;" />
+                            <Button fx:id="btnExportAll" text="Eksportuj sva prisustva u PDF" />
+                            <Button fx:id="btnGenerateReport" text="Generiši izvještaj" />
+                        </VBox>
+                    </children>
+                </FlowPane>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>
+
