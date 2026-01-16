@@ -28,6 +28,10 @@ public class UserService {
         return userDao.findById(id);
     }
 
+    public Optional<User> findByQr(String qrValue) throws Exception {
+        return userDao.findByQr(qrValue);
+    }
+
     public User createUser(User user) throws Exception {
         validateUserForCreate(user);
         // ensure qrValue uniqueness

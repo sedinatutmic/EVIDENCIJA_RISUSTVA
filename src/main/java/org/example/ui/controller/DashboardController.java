@@ -157,7 +157,9 @@ public class DashboardController {
     }
 
     private void onLogout() {
-        // close the dashboard window to return to login - find any node's scene
+        // clear current embedded content so controllers can stop/cleanup (e.g., stop webcam)
+        clearContent();
+        // then close the dashboard window to return to login
         if (contentPane.getScene() != null) {
             contentPane.getScene().getWindow().hide();
         }

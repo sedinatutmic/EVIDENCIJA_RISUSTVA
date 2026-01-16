@@ -1,6 +1,7 @@
 package org.example.ui.controller;
 
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamLockException;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
@@ -16,6 +17,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 import org.example.service.AttendanceService;
+import org.example.service.UserService;
+import org.example.model.User;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -30,6 +33,7 @@ public class QrScanController {
     @FXML private Label resultLabel;
 
     private final AttendanceService attendanceService = new AttendanceService();
+    private final UserService userService = new UserService();
 
     // Webcam fields
     private Webcam webcam;
@@ -40,9 +44,9 @@ public class QrScanController {
     private static final int SCAN_INTERVAL_MS = 300; // scan every 300ms
 
     // UI message reset
-    private String defaultResultText = "Skeniraj QR kod"; // fallback default
+    private String defaultResultText = "Kamera je otvorena i spremna za skeniranje"; // default shown when camera ready
     private PauseTransition resetPause;
-    private static final Duration RESULT_DISPLAY_DURATION = Duration.seconds(3);
+    private static final Duration RESULT_DISPLAY_DURATION = Duration.seconds(4);
 
     @FXML
     public void initialize() {
@@ -81,12 +85,10 @@ public class QrScanController {
             resetPause = null;
         }
         if (resultLabel != null) resultLabel.setText(msg);
-        if (successful) {
-            // schedule reset after duration
-            resetPause = new PauseTransition(RESULT_DISPLAY_DURATION);
-            resetPause.setOnFinished(evt -> setDefaultLabel());
-            resetPause.playFromStart();
-        }
+        // schedule reset after duration for all messages so they don't persist
+        resetPause = new PauseTransition(RESULT_DISPLAY_DURATION);
+        resetPause.setOnFinished(evt -> setDefaultLabel());
+        resetPause.playFromStart();
     }
 
     // preserved fallback method: choose image from file
@@ -105,8 +107,20 @@ public class QrScanController {
                 Platform.runLater(() -> showTemporaryResult("Nije pronađena webkamera", false));
                 return;
             }
+            // if the webcam is already open (possibly by another controller/process) avoid opening it again
+            if (webcam.isOpen()) {
+                Platform.runLater(() -> showTemporaryResult("Kamera je već otvorena (u upotrebi)", false));
+                return;
+            }
             webcam.setViewSize(new Dimension(640, 480));
-            webcam.open(true);
+            try {
+                webcam.open(true);
+            } catch (WebcamLockException wle) {
+                // camera locked by another process or instance - inform user and don't start scanning
+                Platform.runLater(() -> showTemporaryResult("Kamera je zauzeta od strane drugog procesa", false));
+                webcam = null;
+                return;
+            }
 
             executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleAtFixedRate(this::grabAndDecode, 0, SCAN_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -145,6 +159,8 @@ public class QrScanController {
             resetPause.stop();
             resetPause = null;
         }
+        // Ensure the result label is reset to default when camera stops (so messages don't persist after logout)
+        Platform.runLater(this::setDefaultLabel);
     }
 
     private void grabAndDecode() {
@@ -173,15 +189,57 @@ public class QrScanController {
                             @Override
                             protected String call() {
                                 boolean pause = pauseCheckbox != null && pauseCheckbox.isSelected();
-                                return attendanceService.checkInOrOutByQr(text, pause);
+                                String res = attendanceService.checkInOrOutByQr(text, pause);
+                                // if this was a successful checkout, attempt to fetch worked time for display
+                                try {
+                                    if (res != null && res.startsWith("Odjavljeno")) {
+                                        // resolve user by qr
+                                        java.util.Optional<User> uo = userService.findByQr(text);
+                                        if (uo.isPresent()) {
+                                            long uid = uo.get().getId();
+                                            java.util.List<AttendanceService.AttendanceRecord> recs = attendanceService.listAttendancesForUser(uid);
+                                            String today = java.time.LocalDate.now().toString();
+                                            for (AttendanceService.AttendanceRecord ar : recs) {
+                                                if (today.equals(ar.getWorkDate()) && ar.getCheckOut() != null) {
+                                                    String tot = ar.getTotalHoursFormatted();
+                                                    if (tot != null && !tot.isBlank()) {
+                                                        res = res + " — Ukupno: " + tot;
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception ex) {
+                                    // ignore extra info if cannot be fetched
+                                }
+                                return res;
                             }
                         };
 
                         task.setOnSucceeded(evt -> {
                             String res = task.getValue();
                             boolean success = attendanceService.isSuccessfulResponse(res);
-                            // show result and reset label after a short time if success
-                            Platform.runLater(() -> showTemporaryResult(res, success));
+                            // derive friendly message and show
+                            String display;
+                            try {
+                                java.util.Optional<User> uo = userService.findByQr(text);
+                                String name = uo.map(User::getFullName).orElse("(nepoznat)");
+                                if (res != null) {
+                                    if (res.startsWith("Prijavljeno")) display = "Uspješna prijava: " + name;
+                                    else if (res.contains("Pauza počela")) display = "Pauza počela: " + name;
+                                    else if (res.contains("Pauza završena")) display = "Pauza završena: " + name;
+                                    else if (res.startsWith("Odjavljeno") || res.startsWith("Odjavljeno:")) display = "Odjava: " + name + (res.contains("Ukupno:") ? " " + res.substring(res.indexOf("Ukupno:")) : "");
+                                    else if (res.contains("Već ste")) display = "Već ste se odjavili: " + name;
+                                    else display = res;
+                                } else {
+                                    display = "Nepoznata poruka";
+                                }
+                            } catch (Exception ex) {
+                                display = res == null ? "Greška" : res;
+                            }
+                            final String toShow = display;
+                            Platform.runLater(() -> showTemporaryResult(toShow, success));
                             if (success) {
                                 Platform.runLater(() -> { if (pauseCheckbox != null) pauseCheckbox.setSelected(false); });
                             }
@@ -207,4 +265,3 @@ public class QrScanController {
         }
     }
 }
-
