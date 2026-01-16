@@ -26,6 +26,7 @@ public class AttendanceListController {
     @FXML private Button editButton;
     @FXML private Button deleteButton;
     @FXML private Button addButton;
+    @FXML private DatePicker dateFilter; // added date filter
 
     @FXML private TableView<AttendanceService.AttendanceRecord> attendanceTable;
     @FXML private TableColumn<AttendanceService.AttendanceRecord, Long> colId;
@@ -70,7 +71,12 @@ public class AttendanceListController {
             if (deleteButton != null) deleteButton.setDisable(newV == null);
         });
 
-        // load attendances when view initializes
+        // date filter: reload when date changes
+        if (dateFilter != null) {
+            dateFilter.valueProperty().addListener((obs, oldV, newV) -> loadAttendances());
+        }
+
+        // load attendances when view initializes (with no filter)
         loadAttendances();
     }
 
@@ -82,7 +88,13 @@ public class AttendanceListController {
             }
         };
         task.setOnSucceeded(evt -> {
-            attendanceTable.getItems().setAll(task.getValue());
+            List<AttendanceService.AttendanceRecord> list = task.getValue();
+            // apply date filter client-side if set
+            if (dateFilter != null && dateFilter.getValue() != null) {
+                String selDate = dateFilter.getValue().toString(); // yyyy-MM-dd
+                list.removeIf(a -> !selDate.equals(a.getWorkDate()));
+            }
+            attendanceTable.getItems().setAll(list);
         });
         task.setOnFailed(evt -> {
             // show a simple error

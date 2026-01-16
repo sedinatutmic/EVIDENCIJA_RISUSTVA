@@ -6,7 +6,7 @@
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
-    <Label text="Skeniraj QR kod (iz slike)" style="-fx-font-size:16px; -fx-font-weight:bold;" />
+    <Label text="Skeniraj QR kod" style="-fx-font-size:16px; -fx-font-weight:bold;" />
     <Button text="Odaberi sliku" fx:id="chooseImageButton" onAction="#onChooseImage" />
     <CheckBox text="Pauza" fx:id="pauseCheckbox" />
     <Label fx:id="resultLabel" wrapText="true" />

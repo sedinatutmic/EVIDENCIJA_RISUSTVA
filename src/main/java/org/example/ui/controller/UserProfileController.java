@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.example.model.User;
 import org.example.service.AttendanceService;
 import org.example.service.UserService;
@@ -18,11 +19,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 
 public class UserProfileController {
 
+    @FXML private Button btnBack;
     @FXML private ImageView imgProfile;
     @FXML private Label lblFullName;
     @FXML private Label lblEmail;
@@ -31,6 +32,7 @@ public class UserProfileController {
     @FXML private Label lblAddress;
     @FXML private Label lblContact;
     @FXML private Label lblRole;
+    @FXML private Button btnUploadImage;
     @FXML private Button btnUploadCv;
     @FXML private Button btnExportPdf;
 
@@ -62,6 +64,8 @@ public class UserProfileController {
 
         btnUploadCv.setOnAction(e -> onUploadCv());
         btnExportPdf.setOnAction(e -> onExportPdf());
+        btnBack.setOnAction(e -> onBack());
+        btnUploadImage.setOnAction(e -> onUploadImage());
     }
 
     public void setUserId(long userId) {
@@ -116,10 +120,40 @@ public class UserProfileController {
     }
 
     @FXML
+    public void onUploadImage() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Upload profile image");
+        File f = fc.showOpenDialog(getOwnerWindow());
+        if (f == null) return;
+        try {
+            Path uploads = Path.of("uploads");
+            if (!Files.exists(uploads)) Files.createDirectories(uploads);
+            String target = "profile_" + userId + ".png";
+            Files.copy(f.toPath(), uploads.resolve(target), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            // reload image
+            try (InputStream is = new FileInputStream(uploads.resolve(target).toFile())) {
+                javafx.application.Platform.runLater(() -> imgProfile.setImage(new Image(is)));
+            }
+            Alert a = new Alert(Alert.AlertType.INFORMATION);
+            a.setHeaderText(null);
+            a.setContentText("Profile image uploaded: " + target);
+            a.initOwner(getOwnerWindow());
+            a.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setHeaderText("Upload failed");
+            a.setContentText(e.getMessage());
+            a.initOwner(getOwnerWindow());
+            a.showAndWait();
+        }
+    }
+
+    @FXML
     public void onUploadCv() {
         FileChooser fc = new FileChooser();
         fc.setTitle("Upload CV");
-        File f = fc.showOpenDialog(null);
+        File f = fc.showOpenDialog(getOwnerWindow());
         if (f == null) return;
         try {
             Path uploads = Path.of("uploads");
@@ -129,12 +163,14 @@ public class UserProfileController {
             Alert a = new Alert(Alert.AlertType.INFORMATION);
             a.setHeaderText(null);
             a.setContentText("CV uploaded: " + target);
+            a.initOwner(getOwnerWindow());
             a.showAndWait();
         } catch (Exception e) {
             e.printStackTrace();
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setHeaderText("Upload failed");
             a.setContentText(e.getMessage());
+            a.initOwner(getOwnerWindow());
             a.showAndWait();
         }
     }
@@ -149,7 +185,7 @@ public class UserProfileController {
             fc.setTitle("Save user attendance PDF");
             fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
             fc.setInitialFileName(filename);
-            File dest = fc.showSaveDialog(null);
+            File dest = fc.showSaveDialog(getOwnerWindow());
             if (dest == null) return;
 
             Task<Void> task = new Task<>() {
@@ -163,6 +199,7 @@ public class UserProfileController {
                 Alert a = new Alert(Alert.AlertType.INFORMATION);
                 a.setHeaderText(null);
                 a.setContentText("Exported PDF to: " + dest.getAbsolutePath());
+                a.initOwner(getOwnerWindow());
                 a.showAndWait();
             });
             task.setOnFailed(evt -> {
@@ -171,6 +208,7 @@ public class UserProfileController {
                 Alert a = new Alert(Alert.AlertType.ERROR);
                 a.setHeaderText("Export failed");
                 a.setContentText(t == null ? "" : t.getMessage());
+                a.initOwner(getOwnerWindow());
                 a.showAndWait();
             });
             new Thread(task).start();
@@ -179,7 +217,25 @@ public class UserProfileController {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setHeaderText("Export failed");
             a.setContentText(e.getMessage());
+            a.initOwner(getOwnerWindow());
             a.showAndWait();
         }
+    }
+
+    @FXML
+    public void onBack() {
+        // navigate back to users list inside dashboard
+        DashboardController dc = DashboardController.getInstance();
+        if (dc != null) {
+            // use public helper
+            dc.showUsersView();
+        }
+    }
+
+    private Window getOwnerWindow() {
+        // try to find owner window via any known node
+        if (attendanceTable != null && attendanceTable.getScene() != null) return attendanceTable.getScene().getWindow();
+        if (imgProfile != null && imgProfile.getScene() != null) return imgProfile.getScene().getWindow();
+        return null;
     }
 }

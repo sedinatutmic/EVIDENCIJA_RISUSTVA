@@ -29,6 +29,8 @@ public class UsersController {
     @FXML private Button btnDelete;
     @FXML private Button btnOpenProfile;
 
+    @FXML private ComboBox<String> roleFilter; // added role filter field
+
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Long> colId;
     @FXML private TableColumn<User, String> colFullName;
@@ -74,6 +76,17 @@ public class UsersController {
             return new javafx.beans.property.SimpleStringProperty(u.getRole() == null ? "" : u.getRole().name());
         });
 
+        // initialize role filter default and listener
+        if (roleFilter != null) {
+            roleFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> loadUsers());
+            // ensure a default selection
+            Platform.runLater(() -> {
+                if (roleFilter.getItems() != null && !roleFilter.getItems().isEmpty()) {
+                    roleFilter.getSelectionModel().selectFirst();
+                }
+            });
+        }
+
         btnNew.setOnAction(e -> onNew());
         btnEdit.setOnAction(e -> onEdit());
         btnDelete.setOnAction(e -> onDelete());
@@ -91,7 +104,22 @@ public class UsersController {
                 return userService.listUsers();
             }
         };
-        task.setOnSucceeded(evt -> usersTable.getItems().setAll(task.getValue()));
+        task.setOnSucceeded(evt -> {
+            List<User> users = task.getValue();
+            // apply role filter client-side if selected
+            if (roleFilter != null) {
+                String sel = roleFilter.getSelectionModel().getSelectedItem();
+                if (sel != null && !"Sve uloge".equals(sel)) {
+                    try {
+                        Role r = Role.valueOf(sel);
+                        users.removeIf(u -> u.getRole() != r);
+                    } catch (IllegalArgumentException ex) {
+                        // unknown value; ignore
+                    }
+                }
+            }
+            usersTable.getItems().setAll(users);
+        });
         task.setOnFailed(evt -> showError("Unable to load users", task.getException()));
         new Thread(task).start();
     }
@@ -170,17 +198,24 @@ public class UsersController {
         User sel = usersTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
         try {
-            URL u = getClass().getResource("/fxml/user_profile.fxml");
-            if (u == null) return;
-            FXMLLoader loader = new FXMLLoader(u);
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            UserProfileController ctrl = (UserProfileController) loader.getController();
-            ctrl.setUserId(sel.getId());
-            stage.setTitle("Profil: " + sel.getFullName());
-            stage.initOwner(usersTable.getScene().getWindow());
-            stage.show();
+            // navigate to embedded user profile page in the dashboard
+            DashboardController dc = DashboardController.getInstance();
+            if (dc != null) {
+                dc.loadUserProfile(sel.getId());
+            } else {
+                // fallback: open as dialog if dashboard instance not available
+                URL u = getClass().getResource("/fxml/user_profile.fxml");
+                if (u == null) return;
+                FXMLLoader loader = new FXMLLoader(u);
+                Parent root = loader.load();
+                javafx.stage.Stage stage = new javafx.stage.Stage();
+                stage.setScene(new javafx.scene.Scene(root));
+                UserProfileController ctrl = (UserProfileController) loader.getController();
+                ctrl.setUserId(sel.getId());
+                stage.setTitle("Profil: " + sel.getFullName());
+                stage.initOwner(usersTable.getScene().getWindow());
+                stage.show();
+            }
         } catch (Exception e) {
             showError("Error opening profile: " + e.getMessage());
         }

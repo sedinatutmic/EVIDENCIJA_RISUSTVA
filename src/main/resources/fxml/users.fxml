@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.lang.String?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.collections.FXCollections?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UsersController">
     <children>
         <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+            <!-- Page title and role filter -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="Svi korisnici" style="-fx-font-size:18px; -fx-font-weight:bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="Filter po ulozi:" />
+                <ComboBox fx:id="roleFilter">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Sve uloge" />
+                            <String fx:value="Praktikant" />
+                            <String fx:value="Volonter" />
+                        </FXCollections>
+                    </items>
+                    <promptText>Uloga</promptText>
+                </ComboBox>
+            </HBox>
+
             <HBox spacing="8">
                 <Button text="Dodaj korisnika" fx:id="btnNew" />
                 <Button text="Uredi korisnika" fx:id="btnEdit" />

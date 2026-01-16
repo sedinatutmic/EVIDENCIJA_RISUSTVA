@@ -20,8 +20,13 @@ public class DashboardController {
 
     @FXML private StackPane contentPane;
 
+    // singleton-like reference for other controllers to call navigation
+    private static DashboardController instance;
+
     @FXML
     public void initialize() {
+        instance = this; // set instance
+
         // load default dashboard view
         loadDashboardView();
 
@@ -40,6 +45,10 @@ public class DashboardController {
 
         // set initial active
         setActive(menuDashboard);
+    }
+
+    public static DashboardController getInstance() {
+        return instance;
     }
 
     private void setActive(Button btn) {
@@ -121,6 +130,30 @@ public class DashboardController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    // load user profile into contentPane (embedded page)
+    public void loadUserProfile(long userId) {
+        clearContent();
+        try {
+            URL u = getClass().getResource("/fxml/user_profile.fxml");
+            if (u == null) return;
+            FXMLLoader loader = new FXMLLoader(u);
+            Node n = loader.load();
+            contentPane.getChildren().add(n);
+            Object controller = loader.getController();
+            if (controller instanceof org.example.ui.controller.UserProfileController) {
+                ((org.example.ui.controller.UserProfileController) controller).setUserId(userId);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // public navigation helper so embedded pages can navigate back
+    public void showUsersView() {
+        setActive(menuUsers);
+        loadUsersView();
     }
 
     private void onLogout() {

@@ -3,10 +3,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <VBox spacing="10" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UserProfileController" prefWidth="600" prefHeight="400">
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Button text="Nazad" fx:id="btnBack" onAction="#onBack" />
+        <Label text="Profil korisnika" style="-fx-font-size:16px; -fx-font-weight:bold;" />
+    </HBox>
     <HBox spacing="12">
         <VBox spacing="8">
             <ImageView fx:id="imgProfile" fitWidth="150" fitHeight="150" preserveRatio="true" />
             <HBox spacing="6">
+                <Button text="Upload slika" fx:id="btnUploadImage" onAction="#onUploadImage" />
                 <Button text="Dodaj CV" fx:id="btnUploadCv" onAction="#onUploadCv" />
                 <Button text="Eksportuj u PDF" fx:id="btnExportPdf" onAction="#onExportPdf" />
             </HBox>

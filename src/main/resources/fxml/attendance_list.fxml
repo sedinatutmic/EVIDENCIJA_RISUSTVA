@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox spacing="10" alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController">
     <children>
-        <Label text="Sva prisustva" />
+    <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+        <!-- Page title and role filter -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Sva prisustva" style="-fx-font-size:18px; -fx-font-weight:bold;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="Filter po datumu:" />
+            <DatePicker fx:id="dateFilter" />
+        </HBox>
         <HBox spacing="8">
-            <Button text="Dodaj prisustvo" fx:id="addButton" onAction="#onAdd" />
-            <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
-            <Button text="Uredi" fx:id="editButton" onAction="#onEdit" />
-            <Button text="Obriši prisustvo" fx:id="deleteButton" onAction="#onDelete" />
+        <Button text="Dodaj prisustvo" fx:id="addButton" onAction="#onAdd" />
+        <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
+        <Button text="Uredi" fx:id="editButton" onAction="#onEdit" />
+        <Button text="Obriši prisustvo" fx:id="deleteButton" onAction="#onDelete" />
         </HBox>
         <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
             <columns>
@@ -22,5 +30,7 @@
                 <TableColumn text="Ukupno sati" fx:id="colTotalHours" />
             </columns>
         </TableView>
+    </VBox>
     </children>
-</VBox>
+</AnchorPane>
+
