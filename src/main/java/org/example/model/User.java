@@ -16,6 +16,8 @@ public class User {
     private String address;
     private String contact;
     private Role role; // Praktikant or Volonter
+    private String profileImagePath;
+    private String cvFilePath;
 
     public User() {}
 
@@ -58,4 +60,10 @@ public class User {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public String getProfileImagePath() { return profileImagePath; }
+    public void setProfileImagePath(String profileImagePath) { this.profileImagePath = profileImagePath; }
+
+    public String getCvFilePath() { return cvFilePath; }
+    public void setCvFilePath(String cvFilePath) { this.cvFilePath = cvFilePath; }
 }

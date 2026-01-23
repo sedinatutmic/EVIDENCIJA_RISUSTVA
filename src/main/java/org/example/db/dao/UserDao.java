@@ -17,4 +17,9 @@ public interface UserDao {
     boolean update(User user) throws Exception;
 
     boolean delete(long id) throws Exception;
+
+    // new helpers for profile assets
+    boolean updateProfileImagePath(long userId, String path) throws Exception;
+
+    boolean updateCvFilePath(long userId, String path) throws Exception;
 }

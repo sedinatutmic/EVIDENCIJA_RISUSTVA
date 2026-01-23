@@ -17,6 +17,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 public class DashboardCardsController {
 
@@ -57,6 +61,8 @@ public class DashboardCardsController {
         } else {
             System.err.println("Warning: btnGenerateReport not injected (FXML mismatch)");
         }
+        // apply hover animations to cards once the UI is ready
+        Platform.runLater(() -> applyCardHoverEffects());
     }
 
     private void loadDashboardData() {
@@ -102,5 +108,41 @@ public class DashboardCardsController {
             else System.err.println("Dashboard data load failed");
         });
         new Thread(t).start();
+    }
+
+    private void applyCardHoverEffects() {
+        try {
+            if (cardsPane == null) return;
+            for (var node : cardsPane.getChildren()) {
+                if (node instanceof VBox) {
+                    VBox card = (VBox) node;
+                    // add mouse listeners for hover
+                    card.setOnMouseEntered(e -> {
+                        // scale up slightly
+                        ScaleTransition st = new ScaleTransition(Duration.millis(180), card);
+                        st.setToX(1.02);
+                        st.setToY(1.02);
+                        st.play();
+                        // translate up a bit
+                        TranslateTransition tt = new TranslateTransition(Duration.millis(180), card);
+                        tt.setToY(-4);
+                        tt.play();
+                        card.getStyleClass().add("animated-scale");
+                    });
+                    card.setOnMouseExited(e -> {
+                        ScaleTransition st = new ScaleTransition(Duration.millis(180), card);
+                        st.setToX(1.0);
+                        st.setToY(1.0);
+                        st.play();
+                        TranslateTransition tt = new TranslateTransition(Duration.millis(180), card);
+                        tt.setToY(0);
+                        tt.play();
+                        card.getStyleClass().remove("animated-scale");
+                    });
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

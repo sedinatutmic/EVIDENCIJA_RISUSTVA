@@ -3,20 +3,41 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.example.ui.controller.DashboardController">
+            fx:controller="org.example.ui.controller.DashboardController" styleClass="page-root">
 
     <left>
         <!-- Vertical sidebar navigation -->
-        <VBox fx:id="sidebar" spacing="8" prefWidth="200" style="-fx-background-color: #89CFF0; -fx-padding: 10;">
+        <VBox fx:id="sidebar" spacing="8" prefWidth="220" styleClass="sidebar">
             <children>
-                <Button fx:id="menuDashboard" text="Dashboard" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-                <Button fx:id="menuQrScanner" text="QR Scanner" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-                <Button fx:id="menuUsers" text="Korisnici" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-                <Button fx:id="menuAttendance" text="Prisustva" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+                <!-- Logo at top of sidebar -->
+                <HBox alignment="CENTER" styleClass="sidebar-logo">
+                    <ImageView fx:id="inputLogo" fitWidth="160" fitHeight="60" preserveRatio="true" pickOnBounds="true" />
+                </HBox>
+
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="nav-item">
+                    <Region styleClass="nav-accent" />
+                    <Button fx:id="menuDashboard" text="Dashboard" onAction="#onMenuDashboard" styleClass="nav-button" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="nav-item">
+                    <Region styleClass="nav-accent" />
+                    <Button fx:id="menuUsers" text="Korisnici" onAction="#onMenuUsers" styleClass="nav-button" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="nav-item">
+                    <Region styleClass="nav-accent" />
+                    <Button fx:id="menuAttendance" text="Prisustva" onAction="#onMenuAttendance" styleClass="nav-button" HBox.hgrow="ALWAYS" />
+                </HBox>
+
                 <Region VBox.vgrow="ALWAYS" />
-                <Button fx:id="menuLogout" text="Logout" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size:14px; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
+
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="nav-item">
+                    <Region styleClass="nav-accent" />
+                    <Button fx:id="menuLogout" text="Logout" onAction="#onLogout" styleClass="nav-button" HBox.hgrow="ALWAYS" />
+                </HBox>
             </children>
         </VBox>
     </left>

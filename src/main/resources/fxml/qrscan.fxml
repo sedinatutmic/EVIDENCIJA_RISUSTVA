@@ -2,12 +2,63 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.QrScanController">
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.paint.*?>
+<VBox spacing="10" alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.QrScanController" styleClass="page-root scanner-page">
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="8" right="16" bottom="16" left="16"/>
     </padding>
-    <Label text="Skeniraj QR kod" style="-fx-font-size:16px; -fx-font-weight:bold;" />
-    <Button text="Odaberi sliku" fx:id="chooseImageButton" onAction="#onChooseImage" />
-    <CheckBox text="Pauza" fx:id="pauseCheckbox" />
-    <Label fx:id="resultLabel" wrapText="true" />
+
+    <!-- Topbar is part of root layout; keep space so card centers nicely -->
+    <Region fx:id="topbarSpacer" prefHeight="10" />
+
+    <!-- Centered card container -->
+    <StackPane HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" alignment="CENTER">
+        <children>
+            <AnchorPane prefWidth="900" maxWidth="900" minWidth="300" styleClass="scanner-card-container">
+                <children>
+                    <VBox alignment="CENTER" spacing="18" AnchorPane.topAnchor="20.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" styleClass="scanner-card">
+                        <children>
+                            <!-- Big message label (bound to controller.resultLabel) -->
+                            <Label fx:id="resultLabel" text="Molimo skenirajte svoj QR kod" wrapText="true" alignment="CENTER" maxWidth="760" styleClass="scanner-message" />
+
+                            <!-- Placeholder and controls area -->
+                            <HBox spacing="24" alignment="CENTER" styleClass="scanner-body" >
+                                <!-- Visual placeholder (vector shapes) -->
+                                <StackPane prefWidth="360" prefHeight="260" styleClass="scanner-placeholder">
+                                    <children>
+                                        <!-- rounded rectangle frame -->
+                                        <Rectangle width="320" height="220" arcWidth="18" arcHeight="18" fill="transparent" stroke="#dfe7ff" strokeWidth="3" />
+
+                                        <!-- corner brackets -->
+                                        <Group>
+                                            <Line startX="-150" startY="-100" endX="-120" endY="-100" stroke="#2F6BFF" strokeWidth="3" />
+                                        </Group>
+
+                                        <!-- simple QR-like squares -->
+                                        <Rectangle x="60" y="40" width="34" height="34" fill="#2F6BFF" />
+                                        <Rectangle x="220" y="40" width="28" height="28" fill="#2F6BFF" />
+                                        <Rectangle x="140" y="120" width="18" height="18" fill="#2F6BFF" />
+
+                                        <!-- optional scan line (subtle) -->
+                                        <Rectangle fx:id="scanLine" width="300" height="2" fill="#2F6BFF" opacity="0.12" />
+                                    </children>
+                                </StackPane>
+
+                                <!-- Controls area (Pause checkbox + helper) -->
+                                <VBox spacing="10" alignment="TOP_LEFT" styleClass="scanner-controls">
+                                    <children>
+                                        <CheckBox text="Pauza" fx:id="pauseCheckbox" />
+                                        <Label text="Označite ako prijavljujete ili odjavljujete pauzu." wrapText="true" maxWidth="240" styleClass="helper-text" />
+                                    </children>
+                                </VBox>
+                            </HBox>
+
+                        </children>
+                    </VBox>
+                </children>
+            </AnchorPane>
+        </children>
+    </StackPane>
 </VBox>

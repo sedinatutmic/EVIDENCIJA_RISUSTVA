@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.AttendanceListController" styleClass="page-root">
     <children>
     <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
         <!-- Page title and role filter -->
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Label text="Sva prisustva" style="-fx-font-size:18px; -fx-font-weight:bold;" />
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
+            <Label text="Sva prisustva" styleClass="page-title" />
             <Region HBox.hgrow="ALWAYS" />
             <Region HBox.hgrow="ALWAYS" />
             <Label text="Filter po datumu:" />
-            <DatePicker fx:id="dateFilter" />
+            <DatePicker fx:id="dateFilter" styleClass="input date-picker" />
         </HBox>
-        <HBox spacing="8">
-        <Button text="Dodaj prisustvo" fx:id="addButton" onAction="#onAdd" />
-        <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" />
-        <Button text="Uredi" fx:id="editButton" onAction="#onEdit" />
-        <Button text="Obriši prisustvo" fx:id="deleteButton" onAction="#onDelete" />
+        <HBox spacing="8" styleClass="toolbar">
+        <Button text="Dodaj prisustvo" fx:id="addButton" onAction="#onAdd" styleClass="btn-primary" />
+        <Button text="Eksportuj u PDF" fx:id="exportPdfButton" onAction="#onExportPdf" styleClass="btn-secondary" />
+        <Button text="Uredi" fx:id="editButton" onAction="#onEdit" styleClass="btn-secondary" />
+        <Button text="Obriši prisustvo" fx:id="deleteButton" onAction="#onDelete" styleClass="btn-secondary" />
         </HBox>
-        <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
+        <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS" styleClass="table-modern">
             <columns>
                 <TableColumn text="ID" fx:id="colId" />
                 <TableColumn text="Ime" fx:id="colName" />
@@ -33,4 +33,3 @@
     </VBox>
     </children>
 </AnchorPane>
-

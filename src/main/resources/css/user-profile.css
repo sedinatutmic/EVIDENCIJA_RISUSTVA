@@ -1,0 +1,664 @@
+/* Global theme variables (lookup properties) */
+.root {
+    -fx-primary: #2F6BFF;
+    -fx-primary-dark: #2C63F5;
+    -fx-primary-light: #EAF2FF;
+    -fx-bg: #f5f7fb;
+    -fx-card: #ffffff;
+    -fx-border: rgba(15,23,36,0.08);
+    -fx-text-muted: #6b7280;
+    -fx-font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Base page */
+.page-root, .profile-root, .app-root {
+    -fx-background-color: -fx-bg;
+    -fx-font-family: -fx-font-family;
+}
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f1724;
+}
+.h3 {
+    -fx-font-size: 20px;
+    -fx-font-weight: 650;
+    -fx-text-fill: #0f1724;}
+
+/* Role / pill badge styling (supports either 'role-pill' or 'pill-badge' or both) */
+.role-pill.pill-badge, .pill-badge, .role-pill {
+    -fx-background-color: -fx-primary-dark;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 4px 8px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-alignment: center; /* center the label content */
+    -fx-min-height: 22px;
+}
+
+/* Explicit Label selectors so badges attached to Label nodes are styled reliably */
+Label.role-pill.pill-badge, Label.pill-badge, Label.role-pill {
+    -fx-background-color: -fx-primary-dark;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 4px 8px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-alignment: center;
+    -fx-min-height: 22px;
+    -fx-background-insets: 0;
+}
+
+/* Buttons: global .button and classed buttons */
+.button {
+    -fx-background-radius: 12px;
+    -fx-background-insets: 0;
+    -fx-padding: 8px 12px;
+    -fx-font-weight: 600;
+}
+.button:hover {
+    -fx-cursor: hand;
+}
+.button:pressed {
+    -fx-effect: innershadow( gaussian , rgba(0,0,0,0.08) , 4 , 0.0 , 0 , 1 );
+}
+
+/* Primary and secondary classes */
+.btn-primary, Button.btn-primary, .primary-button {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #2F6BFF 0%, #2C63F5 100%);
+    -fx-text-fill: white;
+    -fx-background-radius: 12px;
+}
+.btn-primary:hover { -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #356FFF 0%, #2F6BFF 100%); }
+
+.btn-secondary, Button.btn-secondary {
+    -fx-background-color: -fx-card;
+    -fx-border-color: transparent; /* remove thin border */
+    -fx-text-fill: #0f1724;
+    -fx-background-radius: 12px;
+}
+.btn-secondary:hover { -fx-background-color: -fx-primary-light; }
+
+.btn-danger, Button.btn-danger {
+    -fx-background-color: linear-gradient(#ff5c5c, #ff3b3b);
+    -fx-text-fill: white;
+}
+
+/* Inputs: text fields, text areas, combo boxes */
+.text-field, .text-area, .combo-box, .combo-box-base, .input, .date-picker .text-field {
+    -fx-background-color: -fx-card;
+    -fx-border-color: -fx-border;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 6px 10px;
+    -fx-font-size: 13px;
+}
+.text-field:focused, .text-area:focused, .combo-box:focused, .date-picker:focused {
+    -fx-effect: dropshadow( gaussian , rgba(47,107,255,0.12) , 8 , 0.0 , 0 , 2 );
+    -fx-border-color: -fx-primary;
+}
+
+/* ComboBox popup and ListView styling */
+.combo-box-popup .list-view, .combo-box .list-view, .list-view {
+    -fx-background-color: -fx-card;
+    -fx-border-color: -fx-border;
+    -fx-background-radius: 8px;
+}
+.list-cell {
+    -fx-padding: 6px 10px;
+}
+.list-cell:hover { -fx-background-color: -fx-primary-light; }
+
+/* DatePicker popup */
+.date-picker .popup-content, .date-picker-popup {
+    -fx-background-color: -fx-card;
+    -fx-border-color: -fx-border;
+    -fx-background-radius: 8px;
+}
+
+/* TableView: base and modern card */
+.table-modern, .table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cell-size: 32px;
+}
+.table-card .table-view {
+    -fx-background-color: -fx-card;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 6px;
+}
+.table-view .column-header-background { -fx-background-color: transparent; }
+.table-view .column-header, .table-view .column-header .label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f1724;
+    -fx-background-color: transparent;
+}
+.table-row-cell {
+    -fx-background-color: transparent;
+}
+.table-row-cell:hover { -fx-background-color: rgba(47,107,255,0.04); }
+.table-row-cell:filled:selected, .table-row-cell:filled:selected:hover { -fx-background-color: rgba(47,107,255,0.08); }
+.table-cell { -fx-padding: 8px 10px; }
+
+/* Accent first column cells */
+.table-view .table-cell.first-column-cell {
+    -fx-background-color: rgba(47,107,255,0.04); /* subtle accent for first column */
+    -fx-font-weight: 600;
+    -fx-padding: 8px 12px;
+}
+
+/* Table header (attribute names) styling: make headers bold and highlighted */
+.table-view .column-header-background { -fx-background-color: transparent; }
+.table-view .column-header {
+    -fx-background-color: linear-gradient(to bottom, rgba(47,107,255,0.06) 0%, rgba(47,107,255,0.02) 100%);
+    -fx-padding: 10px 8px;
+    -fx-background-radius: 8px 8px 0 0;
+}
+.table-view .column-header .label {
+    -fx-font-weight: 800;
+    -fx-text-fill: #07112b;
+}
+
+/* Keep cell text readable when row is selected: maintain dark text color for contrast */
+.table-row-cell:selected .table-cell, .table-row-cell:filled:selected .table-cell,
+.table-row-cell:selected .label, .table-row-cell:filled:selected .label {
+    -fx-text-fill: #07112b; /* dark text even when selected */
+}
+.table-row-cell:selected, .table-row-cell:filled:selected {
+    -fx-background-color: rgba(47,107,255,0.12);
+}
+
+/* DatePicker - modern popup and calendar button */
+.date-picker .arrow-button {
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px;
+    -fx-cursor: hand;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'><path d='M7 10h10M7 14h10' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/><rect x='3' y='4' width='18' height='18' rx='2' ry='2' fill='none' stroke='%23000000' opacity='0.0'/></svg>");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+/* hide default arrow shape if present (skin dependent) */
+.date-picker .arrow-button .arrow { -fx-opacity: 0; }
+
+/* Modernize the popup content */
+.date-picker .popup-content {
+    -fx-background-color: -fx-card;
+    -fx-border-color: -fx-border;
+    -fx-background-radius: 10px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.08) , 12 , 0.0 , 0 , 6 );
+}
+/* Day cells inside calendar */
+.date-picker .day-cell, .date-picker .date-cell {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px;
+}
+.date-picker .day-cell:hover, .date-picker .date-cell:hover {
+    -fx-background-color: -fx-primary-light;
+    -fx-text-fill: -fx-text-muted;
+}
+.date-picker .day-cell:filled:selected, .date-picker .date-cell:filled:selected {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: white;
+    -fx-background-radius: 6px;
+}
+
+/* make month/year header modern */
+.date-picker .month-year-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 0 8px 0;
+}
+.date-picker .month-year-pane .label {
+    -fx-font-weight: 700;
+}
+
+/* Big number styling (total hours) - unified with the label */
+.big-number {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #07112b;
+    -fx-padding: 0 6px; /* small breathing room */
+    -fx-background-color: transparent; /* no pill */
+    -fx-effect: none;
+}
+
+/* Make the label 'UKUPNO SATI' visually match the big number */
+.card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #07112b;
+    -fx-padding: 0 6px 0 0;
+}
+
+/* small gap between label and number to appear as a single unit */
+.table-foot .card-title { -fx-margin-right: 6px; }
+
+/* Table footer row */
+.table-foot {
+    -fx-padding: 10px 12px;
+    -fx-alignment: center-left;
+    -fx-background-color: transparent;
+}
+
+/* Ensure the export button in footer aligns and uses small size */
+.table-foot .btn-secondary {
+    -fx-min-width: 100px;
+    -fx-background-radius: 10px;
+}
+
+/* Sidebar navigation styles (consolidated) */
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, rgba(47,107,255,0.04) 0%, rgba(47,107,255,0.02) 100%);
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
+    -fx-background-radius: 0 12px 12px 0;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,36,0.06), 8, 0.0, 0, 2);
+}
+
+.sidebar .nav-item {
+    -fx-padding: 8px 10px;
+    -fx-alignment: center-left;
+    /* remove thin separator/border for a clean, flowy look */
+    -fx-border-width: 0;
+}
+
+/* Ensure nav buttons inside sidebar override generic btn-secondary/btn-primary rules */
+.sidebar .nav-item .nav-button,
+.sidebar .nav-item .nav-button.btn-secondary,
+.sidebar .nav-item .nav-button.btn-primary {
+    -fx-background-color: transparent; /* blend with sidebar */
+    -fx-text-fill: #07112b;
+    -fx-font-weight: 600;
+    -fx-background-radius: 12px;
+}
+
+/* stronger hover within sidebar */
+.sidebar .nav-item .nav-button:hover {
+    -fx-background-color: rgba(47,107,255,0.08);
+}
+
+/* stronger selected state within sidebar */
+.sidebar .nav-item .nav-button-active {
+    -fx-background-color: rgba(47,107,255,0.20);
+    -fx-text-fill: -fx-primary-dark;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12px;
+}
+
+/* ensure there is a visible transition feel (optional) */
+.sidebar .nav-item .nav-button, .sidebar .nav-item .nav-button.nav-hover, .sidebar .nav-item .nav-button-active {
+    -fx-transition: background-color 120ms ease-in-out;
+}
+
+.nav-accent {
+    -fx-min-width: 4px;
+    -fx-pref-width: 4px;
+    -fx-background-color: rgba(47,107,255,0.02);
+    -fx-background-radius: 4px;
+}
+
+.nav-accent.nav-accent-active { -fx-background-color: -fx-primary; }
+
+/* nav-icon (single consolidated block) */
+.nav-icon {
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-alignment: center;
+    -fx-background-size: 18px 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: rgba(15,23,36,0.04); /* subtle circular plate */
+    -fx-background-radius: 10px;
+    -fx-padding: 4px;
+    -fx-margin: 0 10 0 0; /* ensure space between icon and button */
+}
+
+/* SVG icons as background images (fallback to label text if background not supported) */
+.nav-icon.icon-dashboard { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v8h8V3h-8zM3 21h8v-8H3v8z' fill='%230f1724'/></svg>"); }
+.nav-icon.icon-users { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 2c-.29 0-.62.02-.97.05 1.16.84 1.97 1.98 1.97 3.45V20h6v-1.5C21 15.17 16.33 14 16 14z' fill='%230f1724'/></svg>"); }
+.nav-icon.icon-attendance { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' fill='%230f1724'/></svg>"); }
+.nav-icon.icon-logout { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M14 7v4h-4v2h4v4l5-5-5-5zM5 5h6v2H7v10h4v2H5c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2z' fill='%230f1724'/></svg>"); }
+
+/* active state: fill circle with primary and swap icon to white SVG */
+.nav-icon.nav-icon-active { -fx-background-color: -fx-primary; }
+.nav-icon.nav-icon-active.icon-dashboard { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v8h8V3h-8zM3 21h8v-8H3v8z' fill='%23ffffff'/></svg>"); }
+.nav-icon.nav-icon-active.icon-users { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 2c-.29 0-.62.02-.97.05 1.16.84 1.97 1.98 1.97 3.45V20h6v-1.5C21 15.17 16.33 14 16 14z' fill='%23ffffff'/></svg>"); }
+.nav-icon.nav-icon-active.icon-attendance { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z' fill='%23ffffff'/></svg>"); }
+.nav-icon.nav-icon-active.icon-logout { -fx-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M14 7v4h-4v2h4v4l5-5-5-5zM5 5h6v2H7v10h4v2H5c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2z' fill='%23ffffff'/></svg>"); }
+
+/* nav separator to space icon and label */
+.nav-sep { -fx-pref-width: 8px; }
+
+/* nav-button: visually consistent with toolbar */
+.nav-button {
+    /* buttons blend with sidebar background by default (not white) */
+    -fx-background-color: transparent;
+    -fx-text-fill: #07112b; /* ensure label text is dark */
+    -fx-opacity: 1.0;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600; /* slightly bolder for readability */
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 12px;
+    -fx-background-radius: 12px;
+    -fx-pref-width: 100%;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-content-display: left; /* ensure text is shown left */
+}
+
+/* hover kept minimal per request (no strong visual change) */
+.nav-button:hover {
+    -fx-cursor: hand;
+    -fx-background-color: rgba(47,107,255,0.06); /* subtle darken on hover */
+}
+
+.nav-button-active {
+    -fx-background-color: rgba(47,107,255,0.18); /* slightly stronger when selected */
+    -fx-text-fill: -fx-primary-dark;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow( gaussian , rgba(47,107,255,0.06) , 6 , 0.0 , 0 , 2 );
+}
+
+/* hover the entire nav-item HBox to ensure background change across the row */
+.sidebar .nav-item:hover .nav-button,
+.sidebar .nav-item .nav-button.nav-hover {
+    -fx-background-color: rgba(47,107,255,0.12);
+}
+
+/* ensure the button's text (Label inside) uses correct color */
+.sidebar .nav-item .nav-button {
+    -fx-text-fill: #07112b; /* fallback */
+}
+.sidebar .nav-item .nav-button .text {
+    -fx-fill: #07112b; /* ensure the actual Text node is colored */
+}
+
+/* ensure graphic (icon) has spacing and doesn't overlap text */
+.sidebar .nav-item .nav-button > .graphic {
+    -fx-padding: 6px; /* ensure icon plate has internal padding */
+    -fx-margin-right: 8px;
+}
+
+/* Attribute name/value pairs in profile sidebar */
+.profile-info .attr-name {
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151; /* darker muted */
+    -fx-font-size: 12px;
+}
+.profile-info .attr-value {
+    -fx-font-weight: 600;
+    -fx-text-fill: #0f1724;
+    -fx-font-size: 13px;
+}
+
+/* CV button states */
+.btn-primary:disabled, .nav-button:disabled, .btn-secondary:disabled {
+    -fx-opacity: 0.55;
+    -fx-cursor: default;
+}
+
+/* make Upload/Open CV explicit sizes and spacing */
+.profile-sidebar .btn-primary, .profile-sidebar .btn-secondary {
+    -fx-min-width: 110px;
+}
+
+/* center the Upload image button row */
+.profile-sidebar > HBox { -fx-alignment: center; }
+
+/* ScrollPane viewport should show app background so white cards contrast */
+.scroll-pane { -fx-background-color: transparent; -fx-border-color: transparent; }
+.scroll-pane .viewport { -fx-background-color: -fx-bg; -fx-border-color: transparent; }
+
+/* Card styles: modern, rounded, soft shadow, flowy spacing */
+.card {
+    -fx-background-color: -fx-card;
+    -fx-background-radius: 12px;
+    -fx-padding: 14px;
+    -fx-border-radius: 12px;
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.04) , 8 , 0.0 , 0 , 4 );
+    -fx-transition: all 120ms ease-in-out;
+}
+.card .label {
+    -fx-font-weight: 700;
+}
+/* Card hover: stronger shadow and slight lift — animated in controller for scale */
+.card:hover {
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.09) , 16 , 0.0 , 0 , 6 );
+}
+
+/* Small card variants (e.g. totals) */
+.card.small { -fx-padding: 10px; }
+.card.large { -fx-padding: 18px; }
+
+/* Make listviews inside cards match table look */
+.card .list-view, .table-card .list-view, .table-modern .list-view {
+    -fx-background-color: -fx-card;
+    -fx-border-color: -fx-border;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px;
+}
+.card .list-view .list-cell {
+    -fx-padding: 8px 10px;
+    -fx-border-color: transparent transparent rgba(15,23,36,0.04) transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-color: transparent;
+}
+.card .list-view .list-cell:filled:selected, .card .list-view .list-cell:selected {
+    -fx-background-color: rgba(47,107,255,0.06);
+    -fx-text-fill: #07112b;
+}
+.card .list-view .list-cell:hover { -fx-background-color: rgba(47,107,255,0.04); }
+
+/* Ensure card background is applied even when nested under flow containers */
+.page-root .flow-cards > .card, .page-root .flow-cards .card, .flow-cards > .card, .flow-cards .card, .page-root .card, .card {
+    -fx-background-color: #ffffff; /* explicit solid white to override any transparency */
+    -fx-background-insets: 0;
+    -fx-padding: 14px;
+    -fx-opacity: 1.0;
+    -fx-border-color: rgba(15,23,36,0.04);
+    -fx-border-width: 1px;
+    -fx-background-radius: 12px;
+}
+
+/* ListView alternating rows (apply generally) */
+.list-view .list-cell:odd { -fx-background-color: rgba(47,107,255,0.04); }
+.list-view .list-cell:even { -fx-background-color: rgba(47,107,255,0.02); }
+.list-view .list-cell:hover { -fx-background-color: rgba(47,107,255,0.08); }
+.list-view .list-cell:filled:selected, .list-view .list-cell:selected {
+    -fx-background-color: rgba(47,107,255,0.16);
+    -fx-text-fill: #07112b;
+}
+
+/* TableView alternating rows */
+.table-view .table-row-cell:odd { -fx-background-color: rgba(47,107,255,0.04); }
+.table-view .table-row-cell:even { -fx-background-color: rgba(47,107,255,0.02); }
+.table-view .table-row-cell:hover { -fx-background-color: rgba(47,107,255,0.08); }
+.table-view .table-row-cell:filled:selected, .table-view .table-row-cell:selected {
+    -fx-background-color: rgba(47,107,255,0.16);
+}
+
+/* Ensure ListView container inside a card is white and rounded so list cells sit on white plate */
+.card .list-view, .flow-cards .card .list-view .card-large {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-color: -fx-border;
+    -fx-border-radius: 8px;
+}
+
+/* stronger separator for list excerpts for clarity */
+.card .list-view .list-cell {
+    -fx-border-color: transparent transparent rgba(47,107,255,0.06) transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* Ensure labels inside cards appear distinct */
+.card > .label, .card Label { -fx-text-fill: #07112b; }
+
+/* Make the FlowPane of cards responsive: cards wrap and keep spacing */
+.flow-cards { -fx-padding: 8px; }
+
+/* subtle animation helper classes (fallback) */
+.animated-scale {
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.06) , 10 , 0.0 , 0 , 4 );
+}
+
+/* --- Enforced final layout rules to guarantee consistent cards and listplates on the dashboard --- */
+/* Put this at the end so it overrides previous, less specific rules */
+.page-root .flow-cards > .card,
+.page-root .flow-cards .card,
+.flow-cards > .card,
+.flow-cards .card,
+.page-root .card,
+.card,
+.card-small,
+.card-large,
+.small, .card.small, .small.card {
+    -fx-background-color: #ffffff; /* explicit white */
+    -fx-background-radius: 16px;
+    -fx-padding: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: rgba(15,23,36,0.04);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.06) , 12 , 0.0 , 0 , 6 );
+}
+
+/* Card header inside cards */
+.card .card-header, .card-header {
+    -fx-font-weight: 700;
+    -fx-text-fill: #07112b;
+    -fx-padding: 6px 0 12px 10px;
+}
+
+/* Ensure entire ScrollPane and its viewport use app bg so cards contrast */
+.scroll-pane { -fx-background-color: transparent; -fx-border-color: transparent; }
+.scroll-pane .viewport { -fx-background-color: -fx-bg; -fx-border-color: transparent; }
+
+/* ListView "white plate" inside a card: ensure VirtualFlow and clipped container are white */
+.card .list-view,
+.card .list-view .virtual-flow,
+.card .list-view .virtual-flow .clipped-container,
+.flow-cards .card .list-view,
+.flow-cards .card .list-view .virtual-flow {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: rgba(15,23,36,0.04);
+}
+
+/* Enforce list cell spacing and alternating light-blue rows (stronger tint) */
+.card .list-view .list-cell,
+.list-view .list-cell {
+    -fx-padding: 8px 10px;
+    -fx-background-color: transparent;
+}
+.card .list-view .list-cell:odd, .list-view .list-cell:odd {
+    -fx-background-color: rgba(47,107,255,0.04);
+}
+.card .list-view .list-cell:even, .list-view .list-cell:even {
+    -fx-background-color: rgba(47,107,255,0.02);
+}
+.card .list-view .list-cell:hover, .list-view .list-cell:hover {
+    -fx-background-color: rgba(47,107,255,0.10);
+}
+.card .list-view .list-cell:selected, .card .list-view .list-cell:filled:selected,
+.list-view .list-cell:selected, .list-view .list-cell:filled:selected {
+    -fx-background-color: rgba(47,107,255,0.20);
+    -fx-text-fill: #07112b;
+}
+
+/* Mirror the same alternating rows for TableView rows for consistency */
+.table-card .table-view .table-row-cell:odd,
+.table-view .table-row-cell:odd { -fx-background-color: rgba(47,107,255,0.04); }
+.table-card .table-view .table-row-cell:even,
+.table-view .table-row-cell:even { -fx-background-color: rgba(47,107,255,0.02); }
+.table-card .table-view .table-row-cell:hover,
+.table-view .table-row-cell:hover { -fx-background-color: rgba(47,107,255,0.10); }
+.table-card .table-view .table-row-cell:filled:selected,
+.table-card .table-view .table-row-cell:selected,
+.table-view .table-row-cell:filled:selected,
+.table-view .table-row-cell:selected { -fx-background-color: rgba(47,107,255,0.20); }
+
+/* Make sure list-view and table-view inner scrolling areas don't show gray */
+.list-view, .list-view .virtual-flow, .table-view .virtual-flow { -fx-background-color: transparent; }
+
+/* Small utility: ensure count badge inside small cards looks integrated (use .count-badge) */
+/* NOTE: Do not override .card here; keep cards white. */
+
+/* Scanner page styles (kiosk, centered card) */
+.scanner-page {
+    -fx-alignment: center;
+}
+
+.scanner-card-container {
+    -fx-alignment: center;
+}
+
+.scanner-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16px;
+    -fx-padding: 28px;
+    -fx-border-radius: 16px;
+    -fx-border-color: rgba(15,23,36,0.04);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow( gaussian , rgba(15,23,36,0.06) , 18 , 0.0 , 0 , 8 );
+    -fx-max-width: 900px;
+    -fx-min-width: 320px;
+}
+
+.scanner-message {
+    -fx-font-size: 40px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #07112b;
+    -fx-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.scanner-body {
+    -fx-alignment: center;
+}
+
+.scanner-placeholder {
+    -fx-alignment: center;
+    -fx-pref-width: 360px;
+    -fx-pref-height: 260px;
+}
+
+.scanner-placeholder Rectangle {
+    -fx-stroke: rgba(47,107,255,0.18);
+}
+
+/* subtle scan line animation style - actual animation triggered via controller or CSS animation */
+#scanLine {
+    -fx-translate-y: -80px; /* starting position; controller may animate to loop */
+}
+
+.scanner-controls {
+    -fx-alignment: top-left;
+}
+
+.helper-text {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 13px;
+}
+
+/* ensure CheckBox is visible and modern-ish */
+.check-box {
+    -fx-font-weight: 600;
+}
+
+/* small responsive tweak: reduce message size on narrow screens */
+@media screen and (max-width: 480px) {
+    .scanner-message { -fx-font-size: 28px; }
+    .scanner-card { -fx-padding: 18px; }
+}

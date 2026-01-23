@@ -1,16 +1,14 @@
 package org.example.ui.controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import org.example.service.AuthService;
 import org.example.db.DbInit;
+import org.example.service.AuthService;
+import org.example.ui.NavigationService;
 
 import java.net.URL;
 
@@ -22,11 +20,21 @@ public class LoginController {
     @FXML private Label messageLabel;
 
     private final AuthService authService = new AuthService();
+    private NavigationService navigation;
+    private Stage parentStage;
 
     @FXML
     public void initialize() {
         // ensure DB initialized
         DbInit.init();
+    }
+
+    public void setNavigation(NavigationService navigation) {
+        this.navigation = navigation;
+    }
+
+    public void setParentStage(Stage stage) {
+        this.parentStage = stage;
     }
 
     @FXML
@@ -37,27 +45,17 @@ public class LoginController {
         if (ok) {
             messageLabel.setText("Uspješno prijavljeni");
             try {
-                // IMPORTANT: after login we must open the Admin Dashboard, not the QR scanner.
-                URL fxmlUrl = getClass().getResource("/fxml/dashboard.fxml");
-                if (fxmlUrl == null) {
-                    String msg = "FXML resource not found: /fxml/dashboard.fxml. Make sure the file exists on the classpath.";
-                    messageLabel.setText("Greška pri otvaranju prozora: " + msg);
-                    System.err.println(msg);
-                    return;
+                // switch to admin mode in the main shell
+                if (navigation != null) {
+                    navigation.showAdminMode();
                 }
-                Parent root = FXMLLoader.load(fxmlUrl);
-                Stage stage = new Stage();
-                stage.setTitle("Admin Dashboard");
-                stage.setScene(new Scene(root, 800, 600));
-                stage.show();
 
-                // close/hide current window
-                Stage current = (Stage) usernameField.getScene().getWindow();
-                current.close();
+                // close/hide login dialog if present
+                if (parentStage != null) parentStage.close();
 
             } catch (Exception e) {
                 // show brief message to user and print full stack for debugging
-                messageLabel.setText("Greška pri otvaranju prozora: " + e.getMessage());
+                messageLabel.setText("Greška pri prijavi: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {

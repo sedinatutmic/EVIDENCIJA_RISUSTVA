@@ -9,16 +9,21 @@ import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Animation;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.example.service.AttendanceService;
 import org.example.service.UserService;
 import org.example.model.User;
+import org.example.ui.ViewLifecycle;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -26,11 +31,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class QrScanController {
+public class QrScanController implements ViewLifecycle {
 
-    @FXML private Button chooseImageButton; // kept for fallback
     @FXML private CheckBox pauseCheckbox;
     @FXML private Label resultLabel;
+    @FXML private Rectangle scanLine;
 
     private final AttendanceService attendanceService = new AttendanceService();
     private final UserService userService = new UserService();
@@ -44,9 +49,10 @@ public class QrScanController {
     private static final int SCAN_INTERVAL_MS = 300; // scan every 300ms
 
     // UI message reset
-    private String defaultResultText = "Kamera je otvorena i spremna za skeniranje"; // default shown when camera ready
+    private String defaultResultText = "Molimo skenirajte Vaš QR kod..."; // public mode prompt
     private PauseTransition resetPause;
     private static final Duration RESULT_DISPLAY_DURATION = Duration.seconds(4);
+    private Timeline scanLineAnim;
 
     @FXML
     public void initialize() {
@@ -55,22 +61,47 @@ public class QrScanController {
             defaultResultText = resultLabel.getText();
         }
 
-        // Start webcam scanning when the view is attached to a scene, and stop when removed
-        // Use resultLabel's sceneProperty as a convenient node
+        // Keep the scene listener as a fallback (in case the view is used outside NavigationService)
         if (resultLabel != null) {
             resultLabel.sceneProperty().addListener((obs, oldScene, newScene) -> {
                 if (newScene != null) {
                     // set default when shown
-                    Platform.runLater(() -> setDefaultLabel());
-                    startCamera();
+                    Platform.runLater(() -> {
+                        setDefaultLabel();
+                        // ensure camera starts even if navigation doesn't call onShown
+                        startCamera();
+                        startScanLineAnim();
+                    });
                 } else {
-                    stopCamera();
+                    Platform.runLater(() -> {
+                        stopCamera();
+                        stopScanLineAnim();
+                    });
                 }
             });
         } else {
-            // fallback: start immediately
+            setDefaultLabel();
+        }
+    }
+
+    @Override
+    public void onShown() {
+        // Prepare UI and start camera when the view becomes active
+        Platform.runLater(() -> {
+            defaultResultText = "Molimo skenirajte vaš QR kod";
             setDefaultLabel();
             startCamera();
+            startScanLineAnim();
+        });
+    }
+
+    @Override
+    public void onHidden() {
+        // Stop camera and reset UI when the view is no longer visible
+        stopCamera();
+        // stop scan line animation
+        if (scanLineAnim != null) {
+            scanLineAnim.stop();
         }
     }
 
@@ -263,5 +294,23 @@ public class QrScanController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void startScanLineAnim() {
+        if (scanLine == null) return;
+        scanLine.setTranslateY(-80);
+        if (scanLineAnim == null) {
+            scanLineAnim = new Timeline(
+                    new KeyFrame(Duration.ZERO, new KeyValue(scanLine.translateYProperty(), -80)),
+                    new KeyFrame(javafx.util.Duration.seconds(2.2), new KeyValue(scanLine.translateYProperty(), 80))
+            );
+            scanLineAnim.setAutoReverse(true);
+            scanLineAnim.setCycleCount(Animation.INDEFINITE);
+        }
+        scanLineAnim.play();
+    }
+
+    private void stopScanLineAnim() {
+        if (scanLineAnim != null) scanLineAnim.stop();
     }
 }

@@ -65,6 +65,8 @@ public class DbInit {
             if (!cols.contains("address")) st.execute("ALTER TABLE users ADD COLUMN address TEXT");
             if (!cols.contains("contact")) st.execute("ALTER TABLE users ADD COLUMN contact TEXT");
             if (!cols.contains("role")) st.execute("ALTER TABLE users ADD COLUMN role TEXT");
+            if (!cols.contains("profile_image_path")) st.execute("ALTER TABLE users ADD COLUMN profile_image_path TEXT");
+            if (!cols.contains("cv_file_path")) st.execute("ALTER TABLE users ADD COLUMN cv_file_path TEXT");
 
             // Migration for attendance pause columns
             Set<String> aCols = new HashSet<>();

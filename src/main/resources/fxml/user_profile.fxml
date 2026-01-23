@@ -2,47 +2,108 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
-<VBox spacing="10" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UserProfileController" prefWidth="600" prefHeight="400">
-    <HBox spacing="8" alignment="CENTER_LEFT">
-        <Button text="Nazad" fx:id="btnBack" onAction="#onBack" />
-        <Label text="Profil korisnika" style="-fx-font-size:16px; -fx-font-weight:bold;" />
-    </HBox>
-    <HBox spacing="12">
-        <VBox spacing="8">
-            <ImageView fx:id="imgProfile" fitWidth="150" fitHeight="150" preserveRatio="true" />
-            <HBox spacing="6">
-                <Button text="Upload slika" fx:id="btnUploadImage" onAction="#onUploadImage" />
-                <Button text="Dodaj CV" fx:id="btnUploadCv" onAction="#onUploadCv" />
-                <Button text="Eksportuj u PDF" fx:id="btnExportPdf" onAction="#onExportPdf" />
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.UserProfileController" prefWidth="900" prefHeight="640" styleClass="page-root profile-root">
+
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="page-header">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
+            <Button text="Nazad" fx:id="btnBack" onAction="#onBack" styleClass="btn-secondary" />
+            <Label text="Profil korisnika" styleClass="page-title" />
+        </HBox>
+    </top>
+
+    <left>
+        <VBox fx:id="profileSidebar" spacing="12" styleClass="profile-sidebar" alignment="TOP_CENTER">
+            <padding>
+                <Insets top="16" right="12" bottom="16" left="12" />
+            </padding>
+            <StackPane alignment="CENTER">
+                <Circle fx:id="avatarCircle" radius="56" styleClass="avatar-circle" />
+                <ImageView fx:id="imgProfile" fitWidth="112" fitHeight="112" preserveRatio="true" visible="false" />
+            </StackPane>
+
+            <VBox spacing="6" alignment="CENTER">
+                <Label fx:id="lblFullName" styleClass="h3" />
+                <Label fx:id="lblRole" styleClass="role-pill pill-badge" />
+            </VBox>
+
+            <VBox spacing="6" alignment="CENTER_LEFT" styleClass="profile-info">
+                <GridPane hgap="8" vgap="6">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="35" />
+                        <ColumnConstraints percentWidth="65" />
+                    </columnConstraints>
+                    <Label text="Datum rođenja:" styleClass="attr-name" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                    <Label fx:id="lblBirthDate" styleClass="attr-value" wrapText="true" maxWidth="420" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                    <Label text="Adresa:" styleClass="attr-name" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                    <Label fx:id="lblAddress" styleClass="attr-value" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                    <Label text="Kontakt:" styleClass="attr-name" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                    <Label fx:id="lblContact" styleClass="attr-value" wrapText="true" maxWidth="420" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+                    <Label text="Email:" styleClass="attr-name" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                    <Label fx:id="lblEmail" styleClass="attr-value" wrapText="true" maxWidth="420" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                </GridPane>
+            </VBox>
+
+            <HBox spacing="8" alignment="CENTER">
+                <Button text="Uredi sliku" fx:id="btnUploadImage" onAction="#onUploadImage" styleClass="btn-primary" />
+                <Button text="Uredi" fx:id="btnEdit" onAction="#onEdit" styleClass="btn-secondary" visible="false" managed="false" />
+            </HBox>
+
+            <HBox spacing="8" alignment="CENTER">
+                <Button text="Dodaj CV" fx:id="btnUploadCv" onAction="#onUploadCv" styleClass="btn-primary" />
+                <Button text="Otvori CV" fx:id="btnOpenCv" onAction="#onOpenCv" styleClass="btn-secondary" />
+            </HBox>
+
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="12">
+            <padding>
+                <Insets top="12" right="12" bottom="12" left="12" />
+            </padding>
+
+            <HBox spacing="12" alignment="CENTER_LEFT" styleClass="controls-row">
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="Od:" />
+                <DatePicker fx:id="dpFrom" styleClass="input date-picker" />
+                <Label text="Do:" />
+                <DatePicker fx:id="dpTo" styleClass="input date-picker" />
+                <Button text="Primijeni" fx:id="btnFilter" onAction="#onApplyFilter" styleClass="btn-primary" />
+            </HBox>
+
+            <!-- Attendance table -->
+            <VBox spacing="8" styleClass="card table-card">
+                <TableView fx:id="attendanceTable" prefHeight="400" styleClass="table-modern table-card">
+                    <columns>
+                        <TableColumn text="Datum" fx:id="colDate" />
+                        <TableColumn text="Prijava" fx:id="colCheckIn" />
+                        <TableColumn text="Pauza In" fx:id="colPauseIn" />
+                        <TableColumn text="Pauza Out" fx:id="colPauseOut" />
+                        <TableColumn text="Odjava" fx:id="colCheckOut" />
+                        <TableColumn text="Ukupno" fx:id="colTotalHours" />
+                    </columns>
+                </TableView>
+
+                <!-- After the table: total hours summary and export button -->
+                <HBox spacing="6" alignment="CENTER_LEFT" styleClass="table-foot">
+                    <Label text="UKUPNO SATI" styleClass="card-title" />
+                    <Label fx:id="lblTotalHours" styleClass="big-number" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button text="Eksportuj" fx:id="btnExportPdf" onAction="#onExportPdf" styleClass="btn-secondary" />
+                </HBox>
+            </VBox>
+
+            <HBox spacing="8" alignment="CENTER_RIGHT">
+                <Button text="Save changes" fx:id="btnSave" onAction="#onSave" styleClass="btn-primary" visible="false" managed="false" />
             </HBox>
         </VBox>
-        <VBox spacing="6">
-            <Label text="Ime i prezime:" />
-            <Label fx:id="lblFullName" />
-            <Label text="Email:" />
-            <Label fx:id="lblEmail" />
-            <Label text="QR:" />
-            <Label fx:id="lblQr" />
-            <Label text="Datum rođenja:" />
-            <Label fx:id="lblBirthDate" />
-            <Label text="Adresa:" />
-            <Label fx:id="lblAddress" wrapText="true" />
-            <Label text="Kontakt:" />
-            <Label fx:id="lblContact" />
-            <Label text="Uloga:" />
-            <Label fx:id="lblRole" />
-        </VBox>
-    </HBox>
-    <Label text="Historija prisustva" />
-    <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn text="ID" fx:id="colId" />
-            <TableColumn text="Datum" fx:id="colDate" />
-            <TableColumn text="Vrijeme prijave" fx:id="colCheckIn" />
-            <TableColumn text="Početak pauze" fx:id="colPauseIn" />
-            <TableColumn text="Kraj pauze" fx:id="colPauseOut" />
-            <TableColumn text="Vrijeme odjave" fx:id="colCheckOut" />
-            <TableColumn text="Ukupno sati" fx:id="colTotalHours" />
-        </columns>
-    </TableView>
-</VBox>
+    </center>
+</BorderPane>

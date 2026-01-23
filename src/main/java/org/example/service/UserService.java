@@ -56,6 +56,14 @@ public class UserService {
         return userDao.delete(id);
     }
 
+    public boolean updateProfileImagePath(long userId, String path) throws Exception {
+        return userDao.updateProfileImagePath(userId, path);
+    }
+
+    public boolean updateCvFilePath(long userId, String path) throws Exception {
+        return userDao.updateCvFilePath(userId, path);
+    }
+
     private void validateUserForCreate(User user) {
         if (user == null) throw new IllegalArgumentException("User is null");
         if (user.getQrValue() == null || user.getQrValue().isBlank()) {

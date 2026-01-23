@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.RootController" styleClass="app-root">
+    <top>
+        <ToolBar fx:id="topToolbar" styleClass="toolbar">
+            <Label text="Evidencija prisustva" styleClass="app-title" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnAdminLogin" text="Prijava administratora" styleClass="btn-secondary" />
+            <MenuBar fx:id="menuBar" visible="false" managed="false">
+                <menus>
+                    <Menu text="File">
+                        <items>
+                            <MenuItem fx:id="menuLogout" text="Logout" />
+                        </items>
+                    </Menu>
+                    <Menu text="Views">
+                        <items>
+                            <MenuItem fx:id="menuViewQr" text="QR Scanner" />
+                            <MenuItem fx:id="menuViewUsers" text="Users" />
+                            <MenuItem fx:id="menuViewAttendance" text="Attendance" />
+                        </items>
+                    </Menu>
+                </menus>
+            </MenuBar>
+        </ToolBar>
+    </top>
+    <center>
+        <StackPane fx:id="contentPane" />
+    </center>
+</BorderPane>

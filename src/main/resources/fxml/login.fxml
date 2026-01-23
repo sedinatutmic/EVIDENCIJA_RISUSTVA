@@ -2,14 +2,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.LoginController">
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.LoginController" styleClass="page-root login-page">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
-    <Label text="Evidencija prisustva" style="-fx-font-size:18px; -fx-font-weight:bold;" />
-    <TextField fx:id="usernameField" promptText="Korisničko ime" />
-    <PasswordField fx:id="passwordField" promptText="Lozinka" />
-    <Button text="Prijava" fx:id="loginButton" onAction="#onLogin" />
+    <Label text="Evidencija prisustva" styleClass="page-title" />
+    <TextField fx:id="usernameField" promptText="Korisničko ime" styleClass="input" />
+    <PasswordField fx:id="passwordField" promptText="Lozinka" styleClass="input" />
+    <Button text="Prijava" fx:id="loginButton" onAction="#onLogin" styleClass="btn-primary" />
     <Label fx:id="messageLabel" />
 </VBox>
-

@@ -21,7 +21,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByQr(String qrValue) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users WHERE qr_value = ?")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role, profile_image_path, cv_file_path FROM users WHERE qr_value = ?")) {
             ps.setString(1, qrValue);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -62,6 +62,8 @@ public class JdbcUserDao implements UserDao {
                 try { u.setRole(Role.valueOf(roleStr)); } catch (Exception ex) { u.setRole(null); }
             }
         } catch (Exception ex) { /* ignore */ }
+        try { String img = rs.getString("profile_image_path"); if (img != null) u.setProfileImagePath(img); } catch (Exception ex) {}
+        try { String cv = rs.getString("cv_file_path"); if (cv != null) u.setCvFilePath(cv); } catch (Exception ex) {}
         return u;
     }
 
@@ -69,7 +71,7 @@ public class JdbcUserDao implements UserDao {
     public List<User> findAll() throws Exception {
         List<User> list = new ArrayList<>();
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users ORDER BY id")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role, profile_image_path, cv_file_path FROM users ORDER BY id")) {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapRow(rs));
@@ -82,7 +84,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findById(long id) throws Exception {
         try (Connection c = DataSourceProvider.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role FROM users WHERE id = ?")) {
+             PreparedStatement ps = c.prepareStatement("SELECT id, full_name, email, qr_value, is_active, created_at, birth_date, address, contact, role, profile_image_path, cv_file_path FROM users WHERE id = ?")) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -141,6 +143,28 @@ public class JdbcUserDao implements UserDao {
         try (Connection c = DataSourceProvider.getConnection();
              PreparedStatement ps = c.prepareStatement("DELETE FROM users WHERE id = ?")) {
             ps.setLong(1, id);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
+
+    @Override
+    public boolean updateProfileImagePath(long userId, String path) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("UPDATE users SET profile_image_path = ? WHERE id = ?")) {
+            ps.setString(1, path);
+            ps.setLong(2, userId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
+
+    @Override
+    public boolean updateCvFilePath(long userId, String path) throws Exception {
+        try (Connection c = DataSourceProvider.getConnection();
+             PreparedStatement ps = c.prepareStatement("UPDATE users SET cv_file_path = ? WHERE id = ?")) {
+            ps.setString(1, path);
+            ps.setLong(2, userId);
             int affected = ps.executeUpdate();
             return affected > 0;
         }
