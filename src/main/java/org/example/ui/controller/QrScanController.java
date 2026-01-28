@@ -49,7 +49,7 @@ public class QrScanController implements ViewLifecycle {
     private static final int SCAN_INTERVAL_MS = 300; // scan every 300ms
 
     // UI message reset
-    private String defaultResultText = "Molimo skenirajte Vaš QR kod..."; // public mode prompt
+    private String defaultResultText = "Molimo skenirajte Vaš QR kod"; // public mode prompt (capitalized V)
     private PauseTransition resetPause;
     private static final Duration RESULT_DISPLAY_DURATION = Duration.seconds(4);
     private Timeline scanLineAnim;
@@ -88,7 +88,7 @@ public class QrScanController implements ViewLifecycle {
     public void onShown() {
         // Prepare UI and start camera when the view becomes active
         Platform.runLater(() -> {
-            defaultResultText = "Molimo skenirajte vaš QR kod";
+            defaultResultText = "Molimo skenirajte Vaš QR kod";
             setDefaultLabel();
             startCamera();
             startScanLineAnim();
@@ -106,16 +106,55 @@ public class QrScanController implements ViewLifecycle {
     }
 
     private void setDefaultLabel() {
-        if (resultLabel != null) resultLabel.setText(defaultResultText);
+        if (resultLabel != null) {
+            // clear color classes and set default text
+            clearMessageStyle();
+            resultLabel.setText(defaultResultText);
+            if (!resultLabel.getStyleClass().contains("scanner-message")) resultLabel.getStyleClass().add("scanner-message");
+        }
     }
 
+    private void clearMessageStyle() {
+        if (resultLabel == null) return;
+        resultLabel.getStyleClass().removeAll("message-success", "message-danger", "message-info", "message-warning");
+    }
+
+    private void applyMessageStyle(MessageKind kind) {
+        if (resultLabel == null) return;
+        clearMessageStyle();
+        switch (kind) {
+            case SUCCESS -> resultLabel.getStyleClass().add("message-success");
+            case DANGER -> resultLabel.getStyleClass().add("message-danger");
+            case INFO -> resultLabel.getStyleClass().add("message-info");
+            case WARNING -> resultLabel.getStyleClass().add("message-warning");
+        }
+    }
+
+    private enum MessageKind { SUCCESS, DANGER, INFO, WARNING }
+
     private void showTemporaryResult(String msg, boolean successful) {
+        // determine kind heuristically based on message content if available
+        MessageKind kind = MessageKind.INFO;
+        if (msg != null) {
+            String lm = msg.toLowerCase();
+            if (lm.contains("prijava") || lm.contains("uspje" ) || lm.contains("uspješ")) kind = MessageKind.SUCCESS;
+            if (lm.contains("odjava") || lm.contains("odjavljeno") || lm.contains("odjavili") || lm.contains("odjavlj")) kind = MessageKind.DANGER;
+            if (lm.contains("pauza")) kind = MessageKind.INFO;
+        }
+        if (successful) {
+            // prefer success when attendance service reports success
+            if (kind == MessageKind.DANGER) kind = MessageKind.DANGER; else kind = MessageKind.SUCCESS;
+        }
+
         // cancel previous reset
         if (resetPause != null) {
             resetPause.stop();
             resetPause = null;
         }
-        if (resultLabel != null) resultLabel.setText(msg);
+        if (resultLabel != null) {
+            resultLabel.setText(msg);
+            applyMessageStyle(kind);
+        }
         // schedule reset after duration for all messages so they don't persist
         resetPause = new PauseTransition(RESULT_DISPLAY_DURATION);
         resetPause.setOnFinished(evt -> setDefaultLabel());
@@ -157,7 +196,7 @@ public class QrScanController implements ViewLifecycle {
             executor.scheduleAtFixedRate(this::grabAndDecode, 0, SCAN_INTERVAL_MS, TimeUnit.MILLISECONDS);
 
             Platform.runLater(() -> {
-                defaultResultText = "Webkamera spojena, skeniranje...";
+                defaultResultText = "Molimo skenirajte Vaš QR kod...";
                 setDefaultLabel();
             });
         } catch (Exception e) {

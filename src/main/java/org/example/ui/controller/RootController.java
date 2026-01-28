@@ -7,11 +7,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.example.ui.NavigationService;
 import org.example.ui.RootView;
 
-import java.net.URL;
+import java.io.File;
 
 public class RootController implements RootView {
 
@@ -25,12 +27,29 @@ public class RootController implements RootView {
 
     @FXML private StackPane contentPane;
 
+    // logo ImageView added to root.fxml
+    @FXML private ImageView logoImageView;
+
     private final NavigationService navigation = NavigationService.getInstance();
 
     @FXML
     public void initialize() {
         // register with navigation service
         navigation.setRootView(this);
+
+        // try to load logo from uploads folder if present
+        try {
+            if (logoImageView != null) {
+                File logo = new File("uploads/LOGO-INPUT.png");
+                if (logo.exists()) {
+                    Image img = new Image(logo.toURI().toString(), true);
+                    logoImageView.setImage(img);
+                }
+            }
+        } catch (Exception ex) {
+            // ignore - loading logo is non-critical
+            ex.printStackTrace();
+        }
 
         // default: public mode (show top toolbar, hide menu bar)
         if (topToolbar != null) {
@@ -50,11 +69,30 @@ public class RootController implements RootView {
         if (menuViewQr != null) menuViewQr.setOnAction(e -> navigation.navigateTo("/fxml/qrscan.fxml"));
         if (menuViewUsers != null) menuViewUsers.setOnAction(e -> navigation.navigateTo("/fxml/users.fxml"));
         if (menuViewAttendance != null) menuViewAttendance.setOnAction(e -> navigation.navigateTo("/fxml/attendance_list.fxml"));
+
+        // Runtime CSS diagnostics to confirm stylesheet is attached and classes are present
+        Platform.runLater(() -> {
+            try {
+                if (topToolbar != null) {
+                    // ensure topToolbar has toolbar styleClass
+                    if (!topToolbar.getStyleClass().contains("toolbar")) topToolbar.getStyleClass().add("toolbar");
+                    System.out.println("[CSS ROOT] topToolbar.styleClass = " + topToolbar.getStyleClass());
+                    if (topToolbar.getScene() != null) System.out.println("[CSS ROOT] Scene stylesheets = " + topToolbar.getScene().getStylesheets());
+                }
+                if (btnAdminLogin != null) {
+                    // ensure admin login button has toolbar-admin-btn class
+                    if (!btnAdminLogin.getStyleClass().contains("toolbar-admin-btn")) btnAdminLogin.getStyleClass().add("toolbar-admin-btn");
+                    System.out.println("[CSS ROOT] btnAdminLogin.styleClass = " + btnAdminLogin.getStyleClass());
+                }
+            } catch (Exception ignore) {
+            }
+        });
+
     }
 
     private void openLoginDialog() {
-        // centralized login dialog handling in NavigationService so it can stop current view first
-        navigation.showLoginDialog();
+        // navigate to admin login page instead of opening modal dialog
+        navigation.navigateTo("/fxml/admin_login.fxml");
     }
 
     @Override
@@ -124,5 +162,15 @@ public class RootController implements RootView {
             btnAdminLogin.setVisible(true);
             btnAdminLogin.setManaged(true);
         }
+    }
+
+    @Override
+    public void setTopToolbarVisible(boolean visible) {
+        Platform.runLater(() -> {
+            if (topToolbar != null) {
+                topToolbar.setVisible(visible);
+                topToolbar.setManaged(visible);
+            }
+        });
     }
 }

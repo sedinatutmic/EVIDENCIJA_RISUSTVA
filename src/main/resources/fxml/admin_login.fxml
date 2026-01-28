@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<HBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.ui.controller.AdminLoginController"
+      spacing="0" styleClass="page-root login-root">
+
+    <!-- Left illustration (cover) -->
+    <children>
+        <!-- make left pane grow so it occupies more space than the form -->
+        <StackPane fx:id="leftPane" styleClass="login-left" HBox.hgrow="ALWAYS" prefWidth="700">
+            <children>
+                <ImageView fx:id="illustrationImageView" preserveRatio="true" smooth="true" fitWidth="700" styleClass="login-illustration" />
+                <!-- overlay fills the stackpane -->
+                <Region fx:id="overlayRegion" styleClass="login-left-overlay" />
+            </children>
+        </StackPane>
+
+        <!-- Right form (centered vertically) - fixed, narrower so left is dominant -->
+        <VBox fx:id="rightPane" spacing="14" alignment="CENTER" styleClass="login-right" HBox.hgrow="NEVER" prefWidth="500">
+            <padding>
+                <Insets top="24" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <!-- top spacer to push content to center -->
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- centered content -->
+            <VBox fx:id="centeredContent" spacing="18" alignment="CENTER" maxWidth="480">
+                <!-- top logo -->
+                <ImageView fx:id="logoImageView" fitHeight="88" preserveRatio="true" styleClass="top-logo" />
+
+                <Label fx:id="titleLabel" text="Prijava administratora" styleClass="page-title" />
+
+                <VBox spacing="10" styleClass="login-card card" alignment="CENTER_LEFT" maxWidth="420">
+                    <children>
+                        <Label text="Korisničko ime" />
+                        <TextField fx:id="usernameField" promptText="Korisničko ime" styleClass="input form-field" maxWidth="400" />
+
+                        <Label text="Lozinka" />
+                        <PasswordField fx:id="passwordField" promptText="Lozinka" styleClass="input form-field" maxWidth="400" />
+
+                        <Label fx:id="messageLabel" styleClass="error-text" />
+
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <children>
+                                <Button text="Nazad" fx:id="backButton" onAction="#onBack" styleClass="btn-secondary" />
+                                <Button text="Prijava" fx:id="loginButton" onAction="#onLogin" styleClass="btn-primary" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </VBox>
+
+            <!-- bottom spacer to push content to center -->
+            <Region VBox.vgrow="ALWAYS" />
+        </VBox>
+    </children>
+</HBox>

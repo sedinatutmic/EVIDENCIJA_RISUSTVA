@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.RootController" styleClass="app-root">
     <top>
-        <ToolBar fx:id="topToolbar" styleClass="toolbar">
-            <Label text="Evidencija prisustva" styleClass="app-title" />
-            <Pane HBox.hgrow="ALWAYS" />
-            <Button fx:id="btnAdminLogin" text="Prijava administratora" styleClass="btn-secondary" />
-            <MenuBar fx:id="menuBar" visible="false" managed="false">
-                <menus>
-                    <Menu text="File">
-                        <items>
-                            <MenuItem fx:id="menuLogout" text="Logout" />
-                        </items>
-                    </Menu>
-                    <Menu text="Views">
-                        <items>
-                            <MenuItem fx:id="menuViewQr" text="QR Scanner" />
-                            <MenuItem fx:id="menuViewUsers" text="Users" />
-                            <MenuItem fx:id="menuViewAttendance" text="Attendance" />
-                        </items>
-                    </Menu>
-                </menus>
-            </MenuBar>
+        <ToolBar fx:id="topToolbar" styleClass="toolbar scanner-topbar">
+            <StackPane HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                <children>
+                    <!-- centered title -->
+                    <Label text="EVIDENCIJA PRISUSTVA" styleClass="app-title" StackPane.alignment="CENTER" />
+
+                    <!-- left logo (stays at absolute left) -->
+                    <ImageView fx:id="logoImageView" fitHeight="64" preserveRatio="true" smooth="true" styleClass="top-logo" StackPane.alignment="CENTER_LEFT" />
+
+                    <!-- right-side controls (admin button + menu) -->
+                    <HBox spacing="8" StackPane.alignment="CENTER_RIGHT" alignment="CENTER_RIGHT">
+                        <children>
+                            <Button fx:id="btnAdminLogin" text="Prijava administratora" styleClass="toolbar-admin-btn" />
+                            <MenuBar fx:id="menuBar" styleClass="menu-bar" visible="false" managed="false">
+                                <menus>
+                                    <Menu text="File">
+                                        <items>
+                                            <MenuItem fx:id="menuLogout" text="Logout" />
+                                        </items>
+                                    </Menu>
+                                    <Menu text="Views">
+                                        <items>
+                                            <MenuItem fx:id="menuViewQr" text="QR Scanner" />
+                                            <MenuItem fx:id="menuViewUsers" text="Users" />
+                                            <MenuItem fx:id="menuViewAttendance" text="Attendance" />
+                                        </items>
+                                    </Menu>
+                                </menus>
+                            </MenuBar>
+                        </children>
+                    </HBox>
+                </children>
+            </StackPane>
         </ToolBar>
     </top>
     <center>

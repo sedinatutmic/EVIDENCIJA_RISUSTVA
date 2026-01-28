@@ -26,6 +26,10 @@ public class NavigationService {
         this.rootView = rootView;
     }
 
+    public RootView getRootView() {
+        return rootView;
+    }
+
     public void showPublicMode() {
         if (rootView != null) rootView.showPublicMode();
     }
@@ -68,6 +72,15 @@ public class NavigationService {
                     ((ViewLifecycle) controller).onShown();
                 }
 
+                // Set toolbar visibility: only show toolbar on the QR scanner public page
+                try {
+                    if (rootView != null) {
+                        boolean showToolbar = "/fxml/qrscan.fxml".equals(fxmlPath);
+                        rootView.setTopToolbarVisible(showToolbar);
+                    }
+                } catch (Exception ignore) {
+                }
+
                 currentController = controller;
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -80,7 +93,7 @@ public class NavigationService {
      * that it is being hidden so it can stop resources like the camera.
      */
     public void showLoginDialog() {
-        // call onHidden for current controller to stop camera/resources
+        // previous behavior opened a modal dialog; replace with navigation to admin_login.fxml
         if (currentController instanceof ViewLifecycle) {
             try {
                 ((ViewLifecycle) currentController).onHidden();
@@ -88,35 +101,7 @@ public class NavigationService {
                 ex.printStackTrace();
             }
         }
-
-        Platform.runLater(() -> {
-            try {
-                URL u = getClass().getResource("/fxml/login.fxml");
-                if (u == null) return;
-                FXMLLoader loader = new FXMLLoader(u);
-                javafx.scene.Parent root = loader.load();
-                javafx.stage.Stage stage = new javafx.stage.Stage();
-                stage.setTitle("Prijava administratora");
-                if (rootView != null && rootView instanceof javafx.scene.Node) {
-                    // unlikely; rootView is not a Node. Instead try to get owner from RootController via reflection
-                }
-                stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-                stage.setScene(new javafx.scene.Scene(root));
-
-                Object ctrl = loader.getController();
-                try {
-                    java.lang.reflect.Method m1 = ctrl.getClass().getMethod("setNavigation", NavigationService.class);
-                    java.lang.reflect.Method m2 = ctrl.getClass().getMethod("setParentStage", javafx.stage.Stage.class);
-                    if (m1 != null) m1.invoke(ctrl, this);
-                    if (m2 != null) m2.invoke(ctrl, stage);
-                } catch (NoSuchMethodException nsm) {
-                    // not critical
-                }
-
-                stage.showAndWait();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        // navigate to admin login page inside the main content area
+        navigateTo("/fxml/admin_login.fxml");
     }
 }

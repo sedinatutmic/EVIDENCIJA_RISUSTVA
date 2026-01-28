@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -31,6 +32,7 @@ public class UserProfileController {
 
     @FXML private Button btnBack;
     @FXML private ImageView imgProfile;
+    @FXML private Circle avatarCircle;
     @FXML private Label lblFullName;
     @FXML private Label lblEmail;
     @FXML private Label lblBirthDate; // added to FXML
@@ -214,6 +216,8 @@ public class UserProfileController {
                 imgProfile.setFitHeight(targetH);
                 imgProfile.setPreserveRatio(false);
                 imgProfile.setVisible(true);
+                // hide the decorative circle when actual image is shown
+                try { if (avatarCircle != null) avatarCircle.setVisible(false); } catch (Exception ignore) {}
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -224,8 +228,24 @@ public class UserProfileController {
     private void setDefaultAvatar() {
         // small neutral placeholder - e.g., a bundled resource or plain colored circle
         javafx.application.Platform.runLater(() -> {
+            try {
+                Path icon = Path.of("uploads/icon.jpg");
+                if (Files.exists(icon)) {
+                    // reuse setAvatarImage to perform center-crop and show via ImageView
+                    setAvatarImage(icon);
+                    return;
+                }
+            } catch (Exception ignore) {}
             imgProfile.setImage(null);
             imgProfile.setVisible(false);
+            if (avatarCircle != null) {
+                avatarCircle.setVisible(true);
+                try {
+                    avatarCircle.setFill(Color.web("#e6eef9"));
+                    avatarCircle.setStroke(Color.web("#cfe0ff"));
+                    avatarCircle.setStrokeWidth(1.0);
+                } catch (Exception ignore) {}
+            }
         });
     }
 

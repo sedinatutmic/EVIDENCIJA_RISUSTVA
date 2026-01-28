@@ -7,5 +7,5 @@ public interface RootView {
     void showPublicMode();
     void showAdminMode();
     void logout();
+    void setTopToolbarVisible(boolean visible);
 }
-
