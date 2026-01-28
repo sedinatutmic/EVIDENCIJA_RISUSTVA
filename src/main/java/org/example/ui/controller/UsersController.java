@@ -14,6 +14,7 @@ import javafx.stage.Window;
 import org.example.model.User;
 import org.example.model.Role;
 import org.example.service.UserService;
+import org.example.util.ResourceUtil;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -204,7 +205,7 @@ public class UsersController {
                 dc.loadUserProfile(sel.getId());
             } else {
                 // fallback: open as dialog if dashboard instance not available
-                URL u = getClass().getResource("/fxml/user_profile.fxml");
+                URL u = ResourceUtil.fxml("/fxml/user_profile.fxml");
                 if (u == null) return;
                 FXMLLoader loader = new FXMLLoader(u);
                 Parent root = loader.load();

@@ -12,8 +12,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.model.User;
 import org.example.model.Role;
+import org.example.util.ResourceUtil;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 
 public class UserDialogController {
@@ -115,7 +117,8 @@ public class UserDialogController {
 
     // static helper that loads the FXML, initializes controller and shows dialog
     public static Optional<User> showFor(Stage owner, User model) throws IOException {
-        FXMLLoader loader = new FXMLLoader(UserDialogController.class.getResource("/fxml/user_dialog.fxml"));
+        URL u = ResourceUtil.fxml("/fxml/user_dialog.fxml");
+        FXMLLoader loader = new FXMLLoader(u);
         Parent root = loader.load();
         UserDialogController controller = loader.getController();
         controller.setUser(model);

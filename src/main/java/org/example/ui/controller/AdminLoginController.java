@@ -10,8 +10,7 @@ import org.example.service.AuthService;
 import org.example.ui.NavigationService;
 import org.example.ui.RootView;
 import org.example.ui.ViewLifecycle;
-
-import java.io.File;
+import org.example.util.ResourceUtil;
 
 public class AdminLoginController implements ViewLifecycle {
 
@@ -32,26 +31,45 @@ public class AdminLoginController implements ViewLifecycle {
     @FXML
     public void initialize() {
         // ensure DB ready
-        DbInit.init();
-
-        // load logo if exists
         try {
-            File logo = new File("uploads/LOGO-INPUT.png");
-            if (logo.exists()) {
-                logoImageView.setImage(new Image(logo.toURI().toString(), true));
-            }
-        } catch (Exception ignore) {
+            DbInit.init();
+        } catch (RuntimeException ex) {
+            // show user-friendly error and avoid crashing the FXML load
+            try {
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setHeaderText("Greška pri inicijalizaciji baze");
+                a.setContentText(ex.getMessage());
+                a.showAndWait();
+            } catch (Exception ignore) {}
+            ex.printStackTrace();
+            // don't proceed further with DB-dependent initialization
+            return;
         }
+
+        // load logo from bundled resources if present
+        try {
+            if (logoImageView != null) {
+                try {
+                    Image logo = ResourceUtil.image("/images/LOGO-INPUT.png");
+                    logoImageView.setImage(logo);
+                } catch (Exception ignore) {
+                    // no bundled logo; keep ImageView empty (non-critical)
+                }
+            }
+        } catch (Exception ignore) {}
 
         // load illustration into the ImageView and ensure COVER sizing (fills pane both horizontally and vertically)
         try {
             Image img = null;
-            File ill = new File("uploads/login-slika.jpg");
-            if (ill.exists()) {
-                img = new Image(ill.toURI().toString(), true);
-            } else {
-                java.io.InputStream is = getClass().getResourceAsStream("/img/login_placeholder.png");
-                if (is != null) img = new Image(is);
+            try {
+                img = ResourceUtil.image("/images/login-slika.jpg");
+            } catch (Exception e) {
+                // try placeholder bundled in resources
+                try {
+                    img = ResourceUtil.image("/images/login_placeholder.png");
+                } catch (Exception ignore) {
+                    img = null;
+                }
             }
 
             if (img != null && illustrationImageView != null) {

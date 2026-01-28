@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import org.example.db.DbInit;
 import org.example.service.AuthService;
@@ -26,7 +27,18 @@ public class LoginController {
     @FXML
     public void initialize() {
         // ensure DB initialized
-        DbInit.init();
+        try {
+            DbInit.init();
+        } catch (RuntimeException ex) {
+            try {
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setHeaderText("Greška pri inicijalizaciji baze");
+                a.setContentText(ex.getMessage());
+                a.showAndWait();
+            } catch (Exception ignore) {}
+            ex.printStackTrace();
+            return;
+        }
     }
 
     public void setNavigation(NavigationService navigation) {

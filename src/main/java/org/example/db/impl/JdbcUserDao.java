@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -51,11 +52,14 @@ public class JdbcUserDao implements UserDao {
             }
         }
         // new fields
-        String birth = null;
-        try { birth = rs.getString("birth_date"); } catch (Exception ex) { /* ignore */ }
-        if (birth != null) {
-            try { u.setBirthDate(LocalDate.parse(birth)); } catch (Exception ex) { /* ignore */ }
-        }
+        try {
+            java.sql.Date bd = null;
+            try { bd = rs.getDate("birth_date"); } catch (Exception ex) { /* ignore */ }
+            if (bd != null) {
+                try { u.setBirthDate(bd.toLocalDate()); } catch (Exception ex) { /* ignore */ }
+            }
+        } catch (Exception ex) { /* ignore */ }
+
         try { u.setAddress(rs.getString("address")); } catch (Exception ex) { /* ignore */ }
         try { u.setContact(rs.getString("contact")); } catch (Exception ex) { /* ignore */ }
         try {
@@ -110,7 +114,13 @@ public class JdbcUserDao implements UserDao {
             } else {
                 ps.setInt(4, user.isActive() ? 1 : 0);
             }
-            ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            // Birth date: use proper SQL DATE for Postgres to avoid type mismatch
+            if (DataSourceProvider.isPostgres()) {
+                if (user.getBirthDate() == null) ps.setNull(5, Types.DATE);
+                else ps.setDate(5, java.sql.Date.valueOf(user.getBirthDate()));
+            } else {
+                ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            }
             ps.setString(6, user.getAddress());
             ps.setString(7, user.getContact());
             ps.setString(8, user.getRole() == null ? null : user.getRole().name());
@@ -139,7 +149,13 @@ public class JdbcUserDao implements UserDao {
             } else {
                 ps.setInt(4, user.isActive() ? 1 : 0);
             }
-            ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            // Birth date binding
+            if (DataSourceProvider.isPostgres()) {
+                if (user.getBirthDate() == null) ps.setNull(5, Types.DATE);
+                else ps.setDate(5, java.sql.Date.valueOf(user.getBirthDate()));
+            } else {
+                ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
+            }
             ps.setString(6, user.getAddress());
             ps.setString(7, user.getContact());
             ps.setString(8, user.getRole() == null ? null : user.getRole().name());

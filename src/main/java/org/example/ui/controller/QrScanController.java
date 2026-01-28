@@ -21,19 +21,18 @@ import javafx.scene.control.Label;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
-import java.nio.file.Path;
-import java.nio.file.Files;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javafx.util.Duration;
 import org.example.service.AttendanceService;
 import org.example.service.UserService;
 import org.example.model.User;
 import org.example.ui.ViewLifecycle;
+import org.example.util.ResourceUtil;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class QrScanController implements ViewLifecycle {
 
@@ -66,16 +65,15 @@ public class QrScanController implements ViewLifecycle {
             defaultResultText = resultLabel.getText();
         }
 
-        // Try to load uploads/download.png into the placeholder ImageView; hide if missing
+        // Try to load bundled placeholder image into the placeholder ImageView; hide if missing
         try {
             if (placeholderImage != null) {
-                Path p = Path.of("uploads", "download.png");
-                if (Files.exists(p)) {
-                    Image img = new Image(p.toUri().toString(), true);
+                try {
+                    Image img = ResourceUtil.image("/images/download.png");
                     placeholderImage.setImage(img);
                     placeholderImage.setVisible(true);
-                } else {
-                    // if the file isn't present, keep the ImageView but hide it so UI doesn't show broken image
+                } catch (Exception e) {
+                    // if the resource isn't present, keep the ImageView but hide it so UI doesn't show broken image
                     placeholderImage.setVisible(false);
                 }
             }
@@ -239,21 +237,29 @@ public class QrScanController implements ViewLifecycle {
             // ignore
         }
         try {
-            if (webcam != null && webcam.isOpen()) {
-                webcam.close();
+            if (webcam != null) {
+                try { webcam.close(); } catch (Exception ignore) {}
+                webcam = null;
             }
-        } catch (Exception ex) {
-            // ignore
-        } finally {
-            webcam = null;
+        } catch (Exception ignore) {}
+    }
+
+    private void startScanLineAnim() {
+        if (scanLine == null) return;
+        scanLine.setTranslateY(-80);
+        if (scanLineAnim == null) {
+            scanLineAnim = new Timeline(
+                    new KeyFrame(Duration.ZERO, new KeyValue(scanLine.translateYProperty(), -80)),
+                    new KeyFrame(javafx.util.Duration.seconds(2.2), new KeyValue(scanLine.translateYProperty(), 80))
+            );
+            scanLineAnim.setAutoReverse(true);
+            scanLineAnim.setCycleCount(Animation.INDEFINITE);
         }
-        // Cancel any pending reset
-        if (resetPause != null) {
-            resetPause.stop();
-            resetPause = null;
-        }
-        // Ensure the result label is reset to default when camera stops (so messages don't persist after logout)
-        Platform.runLater(this::setDefaultLabel);
+        scanLineAnim.play();
+    }
+
+    private void stopScanLineAnim() {
+        if (scanLineAnim != null) scanLineAnim.stop();
     }
 
     private void grabAndDecode() {
@@ -356,23 +362,5 @@ public class QrScanController implements ViewLifecycle {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void startScanLineAnim() {
-        if (scanLine == null) return;
-        scanLine.setTranslateY(-80);
-        if (scanLineAnim == null) {
-            scanLineAnim = new Timeline(
-                    new KeyFrame(Duration.ZERO, new KeyValue(scanLine.translateYProperty(), -80)),
-                    new KeyFrame(javafx.util.Duration.seconds(2.2), new KeyValue(scanLine.translateYProperty(), 80))
-            );
-            scanLineAnim.setAutoReverse(true);
-            scanLineAnim.setCycleCount(Animation.INDEFINITE);
-        }
-        scanLineAnim.play();
-    }
-
-    private void stopScanLineAnim() {
-        if (scanLineAnim != null) scanLineAnim.stop();
     }
 }

@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import org.example.ui.NavigationService;
+import org.example.util.ResourceUtil;
 
 import java.net.URL;
 import java.util.logging.Level;
@@ -30,8 +31,6 @@ import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.OverrunStyle;
-import java.nio.file.Path;
-import java.nio.file.Files;
 
 public class DashboardController {
 
@@ -78,13 +77,14 @@ public class DashboardController {
             // ensure the global stylesheet is attached to the Scene so CSS selectors work
             try {
                 if (sidebar != null && sidebar.getScene() != null) {
-                    String css = getClass().getResource("/css/user-profile.css").toExternalForm();
-                    if (!sidebar.getScene().getStylesheets().contains(css)) sidebar.getScene().getStylesheets().add(css);
+                    URL css = ResourceUtil.cssUrl("/css/user-profile.css");
+                    String cssUrl = css.toExternalForm();
+                    if (!sidebar.getScene().getStylesheets().contains(cssUrl)) sidebar.getScene().getStylesheets().add(cssUrl);
                     // reapply CSS and layout
                     sidebar.getScene().getRoot().applyCss();
                     sidebar.getScene().getRoot().layout();
                 }
-                // attempt to load a custom input logo from uploads/LOGO-INPUT.png
+                // attempt to load a custom input logo from classpath /images/LOGO-INPUT.png
                 try {
                     // bind contentPane to scene size so embedded pages fill available space
                     if (contentPane != null && sidebar != null && sidebar.getScene() != null) {
@@ -117,7 +117,7 @@ public class DashboardController {
     private void loadDashboardView() {
         clearContent();
         try {
-            URL u = getClass().getResource("/fxml/dashboard_cards.fxml");
+            URL u = ResourceUtil.fxml("/fxml/dashboard_cards.fxml");
             if (u != null) {
                 Node n = FXMLLoader.load(u);
                 contentPane.getChildren().add(n);
@@ -132,8 +132,7 @@ public class DashboardController {
     private void loadUsersView() {
         clearContent();
         try {
-            URL u = getClass().getResource("/fxml/users.fxml");
-            if (u == null) return;
+            URL u = ResourceUtil.fxml("/fxml/users.fxml");
             FXMLLoader loader = new FXMLLoader(u);
             Node n = loader.load();
             contentPane.getChildren().add(n);
@@ -141,9 +140,10 @@ public class DashboardController {
             // ensure stylesheet is present and force CSS to re-apply
             javafx.application.Platform.runLater(() -> {
                 try {
-                    String css = getClass().getResource("/css/user-profile.css").toExternalForm();
-                    if (contentPane.getScene() != null && !contentPane.getScene().getStylesheets().contains(css)) {
-                        contentPane.getScene().getStylesheets().add(css);
+                    URL css = ResourceUtil.cssUrl("/css/user-profile.css");
+                    String cssUrl = css.toExternalForm();
+                    if (contentPane.getScene() != null && !contentPane.getScene().getStylesheets().contains(cssUrl)) {
+                        contentPane.getScene().getStylesheets().add(cssUrl);
                     }
                     // force CSS recompute
                     if (contentPane.getScene() != null && contentPane.getScene().getRoot() != null) contentPane.getScene().getRoot().applyCss();
@@ -165,7 +165,7 @@ public class DashboardController {
     private void loadAttendanceView() {
         clearContent();
         try {
-            URL u = getClass().getResource("/fxml/attendance_list.fxml");
+            URL u = ResourceUtil.fxml("/fxml/attendance_list.fxml");
             if (u == null) return;
             Node n = FXMLLoader.load(u);
             contentPane.getChildren().add(n);
@@ -173,9 +173,10 @@ public class DashboardController {
             // ensure stylesheet is present and force CSS to re-apply
             javafx.application.Platform.runLater(() -> {
                 try {
-                    String css = getClass().getResource("/css/user-profile.css").toExternalForm();
-                    if (contentPane.getScene() != null && !contentPane.getScene().getStylesheets().contains(css)) {
-                        contentPane.getScene().getStylesheets().add(css);
+                    URL css = ResourceUtil.cssUrl("/css/user-profile.css");
+                    String cssUrl = css.toExternalForm();
+                    if (contentPane.getScene() != null && !contentPane.getScene().getStylesheets().contains(cssUrl)) {
+                        contentPane.getScene().getStylesheets().add(cssUrl);
                     }
                     if (contentPane.getScene() != null && contentPane.getScene().getRoot() != null) contentPane.getScene().getRoot().applyCss();
                     n.applyCss();
@@ -192,7 +193,7 @@ public class DashboardController {
     public void loadUserProfile(long userId) {
         clearContent();
         try {
-            URL u = getClass().getResource("/fxml/user_profile.fxml");
+            URL u = ResourceUtil.fxml("/fxml/user_profile.fxml");
             if (u == null) return;
             FXMLLoader loader = new FXMLLoader(u);
             Parent n = loader.load();
@@ -201,25 +202,23 @@ public class DashboardController {
 
             // attach page-specific stylesheet so styles apply without relying on FXML <stylesheets>
             try {
-                URL css = getClass().getResource("/css/user-profile.css");
-                if (css != null) {
-                    String cssUrl = css.toExternalForm();
-                    // attach to the Scene after it's available
-                    javafx.application.Platform.runLater(() -> {
-                        try {
-                            if (contentPane != null && contentPane.getScene() != null) {
-                                if (!contentPane.getScene().getStylesheets().contains(cssUrl))
-                                    contentPane.getScene().getStylesheets().add(cssUrl);
-                                // force CSS recompute
-                                if (contentPane.getScene().getRoot() != null) contentPane.getScene().getRoot().applyCss();
-                                n.applyCss();
-                                applyDesignSystem(n);
-                            } else {
-                                if (!n.getStylesheets().contains(cssUrl)) n.getStylesheets().add(cssUrl);
-                            }
-                        } catch (Exception ignore) {}
-                    });
-                }
+                URL css = ResourceUtil.cssUrl("/css/user-profile.css");
+                String cssUrl = css.toExternalForm();
+                // attach to the Scene after it's available
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        if (contentPane != null && contentPane.getScene() != null) {
+                            if (!contentPane.getScene().getStylesheets().contains(cssUrl))
+                                contentPane.getScene().getStylesheets().add(cssUrl);
+                            // force CSS recompute
+                            if (contentPane.getScene().getRoot() != null) contentPane.getScene().getRoot().applyCss();
+                            n.applyCss();
+                            applyDesignSystem(n);
+                        } else {
+                            if (!n.getStylesheets().contains(cssUrl)) n.getStylesheets().add(cssUrl);
+                        }
+                    } catch (Exception ignore) {}
+                });
             } catch (Exception ignore) {}
 
             Object controller = loader.getController();
@@ -489,21 +488,20 @@ public class DashboardController {
         });
      }
 
-    // Load sidebar input logo from uploads/LOGO-INPUT.png if present
+    // Load sidebar input logo from classpath /images/LOGO-INPUT.png if present
     private void loadSidebarLogo() {
         try {
             if (inputLogo == null) return;
-            Path p = Path.of("uploads", "LOGO-INPUT.png");
-            if (!Files.exists(p)) {
-                // hide the ImageView if logo not present
+            try {
+                Image img = ResourceUtil.image("/images/LOGO-INPUT.png");
+                javafx.application.Platform.runLater(() -> {
+                    inputLogo.setImage(img);
+                    inputLogo.setVisible(true);
+                });
+            } catch (Exception e) {
+                // hide the ImageView if the resource isn't bundled
                 javafx.application.Platform.runLater(() -> inputLogo.setVisible(false));
-                return;
             }
-            Image img = new Image(p.toUri().toString(), true);
-            javafx.application.Platform.runLater(() -> {
-                inputLogo.setImage(img);
-                inputLogo.setVisible(true);
-            });
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, "Could not load sidebar logo", ex);
         }

@@ -3,6 +3,7 @@ package org.example.ui;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import org.example.util.ResourceUtil;
 
 import java.net.URL;
 
@@ -55,11 +56,7 @@ public class NavigationService {
                     ((ViewLifecycle) currentController).onHidden();
                 }
 
-                URL u = getClass().getResource(fxmlPath);
-                if (u == null) {
-                    System.err.println("FXML not found: " + fxmlPath);
-                    return;
-                }
+                URL u = ResourceUtil.fxml(fxmlPath);
                 FXMLLoader loader = new FXMLLoader(u);
                 Node n = loader.load();
                 Object controller = loader.getController();

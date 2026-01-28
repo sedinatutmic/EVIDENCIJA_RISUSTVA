@@ -33,15 +33,6 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- MySQL JDBC -->
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.45.3.0</version>
-        </dependency>
-
-
-
         <!-- HikariCP (DB pool) -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -115,6 +106,14 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <!-- Include distributed image assets from uploads/ into classpath under /images -->
+            <resource>
+                <directory>uploads</directory>
+                <targetPath>images</targetPath>
                 <includes>
                     <include>**/*</include>
                 </includes>
@@ -241,10 +240,10 @@
                     <type>MSI</type>
                     <winMenu>true</winMenu>
                     <winShortcut>true</winShortcut>
-                    <winConsole>false</winConsole>
+                    <winConsole>true</winConsole>
 
                     <!-- Icon (optional - zakomentiraj ako nemaš) -->
-                    <!-- <icon>src/main/resources/icon.ico</icon> -->
+                    <icon>src/main/resources/images.ico</icon>
 
                     <!-- Installation Directory -->
                     <installDir>EvidencijaPrisustva</installDir>

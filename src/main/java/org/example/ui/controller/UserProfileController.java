@@ -14,6 +14,7 @@ import org.example.model.User;
 import org.example.service.AttendanceService;
 import org.example.service.UserService;
 import org.example.util.PdfExporter;
+import org.example.util.ResourceUtil;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -151,11 +152,27 @@ public class UserProfileController {
                     try {
                         String p = u.getProfileImagePath();
                         if (p != null && !p.isBlank()) {
-                            Path imgPath = Path.of(p);
-                            if (!imgPath.isAbsolute()) imgPath = Path.of("uploads/profile_images").resolve(imgPath.getFileName());
-                            if (Files.exists(imgPath)) {
-                                currentImagePath = imgPath;
-                                setAvatarImage(imgPath);
+                            // if profile image path starts with / treat as bundled classpath resource
+                            if (p.startsWith("/")) {
+                                try {
+                                    Image img = ResourceUtil.image(p);
+                                    currentImagePath = null; // not a filesystem path
+                                    javafx.application.Platform.runLater(() -> {
+                                        imgProfile.setImage(img);
+                                        imgProfile.setVisible(true);
+                                        if (avatarCircle != null) avatarCircle.setVisible(false);
+                                    });
+                                } catch (Exception ex) {
+                                    // fall through to default avatar
+                                    setDefaultAvatar();
+                                }
+                            } else {
+                                Path imgPath = Path.of(p);
+                                if (!imgPath.isAbsolute()) imgPath = Path.of("uploads/profile_images").resolve(imgPath.getFileName());
+                                if (Files.exists(imgPath)) {
+                                    currentImagePath = imgPath;
+                                    setAvatarImage(imgPath);
+                                }
                             }
                         } else {
                             // fallback: check conventional uploads path
@@ -229,12 +246,13 @@ public class UserProfileController {
         // small neutral placeholder - e.g., a bundled resource or plain colored circle
         javafx.application.Platform.runLater(() -> {
             try {
-                Path icon = Path.of("uploads/icon.jpg");
-                if (Files.exists(icon)) {
-                    // reuse setAvatarImage to perform center-crop and show via ImageView
-                    setAvatarImage(icon);
+                try {
+                    Image res = ResourceUtil.image("/images/icon.jpg");
+                    imgProfile.setImage(res);
+                    imgProfile.setVisible(true);
+                    if (avatarCircle != null) avatarCircle.setVisible(false);
                     return;
-                }
+                } catch (Exception ignore) {}
             } catch (Exception ignore) {}
             imgProfile.setImage(null);
             imgProfile.setVisible(false);

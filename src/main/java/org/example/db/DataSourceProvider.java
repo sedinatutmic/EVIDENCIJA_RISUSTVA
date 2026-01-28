@@ -1,14 +1,19 @@
 package org.example.db;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class DataSourceProvider {
 
     private static String dbUrl;
+    private static HikariDataSource ds;
 
     private static Properties loadProps() {
         Properties props = new Properties();
@@ -28,19 +33,26 @@ public class DataSourceProvider {
     }
 
     private static String envOrProp(Properties props, String envKey, String propKey, String defaultVal) {
+        // Prefer environment variable
         String v = System.getenv(envKey);
-        if (v != null && !v.isBlank()) return v;
+        if (v != null && !v.isBlank()) return v.trim();
+        // Then canonical property name (e.g. db.host)
         v = props.getProperty(propKey);
-        if (v != null && !v.isBlank()) return v;
-        return defaultVal;
+        if (v != null && !v.isBlank()) return v.trim();
+        // Fallback to uppercase property name (e.g. DB_HOST) to support existing application.properties
+        v = props.getProperty(envKey);
+        if (v != null && !v.isBlank()) return v.trim();
+        return defaultVal == null ? null : defaultVal.trim();
     }
 
     public static boolean isPostgres() {
-        Properties props = loadProps();
-        String dbType = props.getProperty("db.type", System.getenv().containsKey("DB_TYPE") ? System.getenv("DB_TYPE") : "sqlite");
-        if (dbType == null) return false;
-        dbType = dbType.trim().toLowerCase();
-        return ("postgres".equals(dbType) || "postgresql".equals(dbType));
+        // We intentionally only support Postgres now. If required envs are present, it's Postgres.
+        try {
+            String url = getJdbcUrl();
+            return url != null && url.startsWith("jdbc:postgresql:");
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public static boolean readBooleanFromResultSet(ResultSet rs, String columnLabel) {
@@ -57,68 +69,85 @@ public class DataSourceProvider {
         }
     }
 
-    private static String getDbUrl() {
+    // Build and return the JDBC URL for Postgres. Validate required config and do NOT fallback to SQLite.
+    public static String getJdbcUrl() {
         if (dbUrl != null) return dbUrl;
 
         Properties props = loadProps();
 
-        String dbType = props.getProperty("db.type", "sqlite").trim().toLowerCase();
+        String host = envOrProp(props, "DB_HOST", "db.host", "");
+        String port = envOrProp(props, "DB_PORT", "db.port", "5432");
+        String dbName = envOrProp(props, "DB_NAME", "db.name", "");
+        String sslmode = envOrProp(props, "DB_SSLMODE", "db.sslmode", "require");
 
-        if ("postgres".equals(dbType) || "postgresql".equals(dbType)) {
-            String host = envOrProp(props, "DB_HOST", "db.host", "");
-            String port = envOrProp(props, "DB_PORT", "db.port", "5432");
-            String dbName = envOrProp(props, "DB_NAME", "db.name", "defaultdb");
-            String sslmode = envOrProp(props, "DB_SSLMODE", "db.sslmode", "require");
+        // Debug: print resolved values (mask password)
+        try {
+            String dbgUser = envOrProp(props, "DB_USER", "db.user", "");
+            String dbgPass = envOrProp(props, "DB_PASSWORD", "db.password", "");
+            String maskedPass = (dbgPass == null || dbgPass.isBlank()) ? "<missing>" : "<masked:length=" + dbgPass.length() + ">";
+            System.out.println("[DB CONFIG] host='" + host + "' port='" + port + "' db='" + dbName + "' user='" + dbgUser + "' password=" + maskedPass + " sslmode='" + sslmode + "'");
+        } catch (Exception ignore) {}
 
-            if (host == null || host.isBlank()) {
-                throw new RuntimeException("DB_HOST nije postavljen za Postgres konekciju");
-            }
+        List<String> missing = new ArrayList<>();
+        if (host == null || host.isBlank()) missing.add("DB_HOST");
+        if (dbName == null || dbName.isBlank()) missing.add("DB_NAME");
+        String user = envOrProp(props, "DB_USER", "db.user", "");
+        if (user == null || user.isBlank()) missing.add("DB_USER");
+        String password = envOrProp(props, "DB_PASSWORD", "db.password", "");
+        if (password == null || password.isBlank()) missing.add("DB_PASSWORD");
 
-            StringBuilder url = new StringBuilder();
-            url.append("jdbc:postgresql://").append(host).append(":").append(port).append("/").append(dbName)
-                    .append("?sslmode=").append(sslmode);
-
-            // optionally add additional params
-            String options = props.getProperty("db.options");
-            if (options != null && !options.isBlank()) {
-                url.append("&").append(options);
-            }
-
-            dbUrl = url.toString();
-
-            return dbUrl;
-        } else {
-            // default: sqlite
-            String path = envOrProp(props, "DB_PATH", "db.path", "evidencija.db");
-            if (path == null || path.isBlank()) {
-                throw new RuntimeException("db.path nije postavljen u application.properties ili DB_PATH env var!");
-            }
-            dbUrl = "jdbc:sqlite:" + path;
-            return dbUrl;
+        if (!missing.isEmpty()) {
+            throw new RuntimeException("Postgres config missing: " + String.join("/", missing) + ". Please set as env vars or in application.properties");
         }
+
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:postgresql://").append(host).append(":").append(port).append("/").append(dbName)
+                .append("?sslmode=").append(sslmode);
+
+        // optionally add additional params
+        String options = props.getProperty("db.options");
+        if (options != null && !options.isBlank()) {
+            url.append("&").append(options);
+        }
+
+        dbUrl = url.toString();
+        return dbUrl;
+    }
+
+    private static synchronized void initDataSourceIfNeeded() {
+        if (ds != null) return;
+
+        Properties props = loadProps();
+
+        String jdbcUrl = getJdbcUrl();
+        String user = envOrProp(props, "DB_USER", "db.user", "");
+        String password = envOrProp(props, "DB_PASSWORD", "db.password", "");
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(user);
+        config.setPassword(password);
+        config.setMaximumPoolSize(Integer.parseInt(envOrProp(props, "DB_POOL_MAX", "db.pool.max", "10")));
+        config.setMinimumIdle(Integer.parseInt(envOrProp(props, "DB_POOL_MIN", "db.pool.min", "2")));
+        config.setPoolName("EvidencijaPool");
+        // optional: keepalive and timeouts
+        config.setConnectionTimeout(Long.parseLong(envOrProp(props, "DB_CONN_TIMEOUT_MS", "db.conn.timeout.ms", "30000")));
+
+        // Let Hikari pick driver; but ensure driver class is present by referencing it
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException ignored) {
+        }
+
+        ds = new HikariDataSource(config);
     }
 
     public static Connection getConnection() {
         try {
-            Properties props = loadProps();
-            String dbType = props.getProperty("db.type", "sqlite").trim().toLowerCase();
-            if ("postgres".equals(dbType) || "postgresql".equals(dbType)) {
-                String url = getDbUrl();
-                String user = envOrProp(props, "DB_USER", "db.user", "");
-                String password = envOrProp(props, "DB_PASSWORD", "db.password", "");
-                // load driver class
-                try {
-                    Class.forName("org.postgresql.Driver");
-                } catch (ClassNotFoundException ignored) {}
-                if (user != null && !user.isBlank()) {
-                    return DriverManager.getConnection(url, user, password);
-                } else {
-                    return DriverManager.getConnection(url);
-                }
-            } else {
-                // sqlite
-                return DriverManager.getConnection(getDbUrl());
-            }
+            initDataSourceIfNeeded();
+            return ds.getConnection();
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception e) {
             throw new RuntimeException("Ne mogu otvoriti DB konekciju!", e);
         }
@@ -129,5 +158,17 @@ public class DataSourceProvider {
             if (c != null && !c.isClosed()) return true;
         } catch (Exception ignored) {}
         return false;
+    }
+
+    /**
+     * Close the HikariDataSource if initialized. Safe to call multiple times.
+     */
+    public static synchronized void shutdown() {
+        try {
+            if (ds != null) {
+                try { ds.close(); } catch (Exception ignore) {}
+                ds = null;
+            }
+        } catch (Exception ignored) {}
     }
 }

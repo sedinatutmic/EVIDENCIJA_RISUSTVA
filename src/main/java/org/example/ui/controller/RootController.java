@@ -12,8 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.example.ui.NavigationService;
 import org.example.ui.RootView;
-
-import java.io.File;
+import org.example.util.ResourceUtil;
 
 public class RootController implements RootView {
 
@@ -37,13 +36,15 @@ public class RootController implements RootView {
         // register with navigation service
         navigation.setRootView(this);
 
-        // try to load logo from uploads folder if present
+        // try to load logo from bundled resources if present
         try {
             if (logoImageView != null) {
-                File logo = new File("uploads/LOGO-INPUT.png");
-                if (logo.exists()) {
-                    Image img = new Image(logo.toURI().toString(), true);
+                try {
+                    Image img = ResourceUtil.image("/images/LOGO-INPUT.png");
                     logoImageView.setImage(img);
+                } catch (Exception ex) {
+                    // ignore - loading logo is non-critical
+                    ex.printStackTrace();
                 }
             }
         } catch (Exception ex) {

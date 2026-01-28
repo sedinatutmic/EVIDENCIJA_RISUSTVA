@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.example.util.ResourceUtil;
 
 public class PdfExporter {
 
@@ -166,21 +167,33 @@ public class PdfExporter {
             PdfWriter.getInstance(doc, fos);
             doc.open();
 
-            // 1) Header: try to load center logo from filesystem (uploads/LOGO-INPUT.png)
-            // This uses a filesystem path so the image can be managed outside the JAR.
-            // If the file is missing or fails to load we silently continue without a logo.
+            // 1) Header: try to load center logo from classpath first (/images/LOGO-INPUT.png)
             try {
-                Path logoPath = Path.of("uploads", "LOGO-INPUT.png");
-                if (Files.exists(logoPath)) {
-                    Image logo = Image.getInstance(logoPath.toAbsolutePath().toString());
-                    // scale to fit - max width 180, maintain aspect ratio
-                    float maxW = 180f;
-                    if (logo.getWidth() > maxW) {
-                        float scale = maxW / logo.getWidth();
-                        logo.scaleAbsolute(logo.getWidth() * scale, logo.getHeight() * scale);
+                try {
+                    java.net.URL logoUrl = ResourceUtil.resourceUrl("/images/LOGO-INPUT.png");
+                    if (logoUrl != null) {
+                        Image logo = Image.getInstance(logoUrl);
+                        float maxW = 180f;
+                        if (logo.getWidth() > maxW) {
+                            float scale = maxW / logo.getWidth();
+                            logo.scaleAbsolute(logo.getWidth() * scale, logo.getHeight() * scale);
+                        }
+                        logo.setAlignment(Image.ALIGN_CENTER);
+                        doc.add(logo);
                     }
-                    logo.setAlignment(Image.ALIGN_CENTER);
-                    doc.add(logo);
+                } catch (RuntimeException re) {
+                    // classpath resource missing; fallback to filesystem uploads/LOGO-INPUT.png
+                    Path logoPath = Path.of("uploads", "LOGO-INPUT.png");
+                    if (Files.exists(logoPath)) {
+                        Image logo = Image.getInstance(logoPath.toAbsolutePath().toString());
+                        float maxW = 180f;
+                        if (logo.getWidth() > maxW) {
+                            float scale = maxW / logo.getWidth();
+                            logo.scaleAbsolute(logo.getWidth() * scale, logo.getHeight() * scale);
+                        }
+                        logo.setAlignment(Image.ALIGN_CENTER);
+                        doc.add(logo);
+                    }
                 }
             } catch (Exception ex) {
                 // if logo fails, skip it gracefully - we don't want export to fail due to missing logo
