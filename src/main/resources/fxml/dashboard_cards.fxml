@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
 <ScrollPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ui.controller.DashboardCardsController" fitToWidth="true" styleClass="page-root">
     <content>
         <VBox spacing="12">
@@ -40,12 +41,12 @@
                             <ListView fx:id="listRecent" prefHeight="180" styleClass="list-view" style="-fx-font-weight: normal"/>
                         </VBox>
 
-                        <!-- Optional Controls -->
-                        <VBox spacing="8" styleClass="card" prefWidth="220">
-                            <Label text="Controls" style="-fx-font-weight:bold;" />
-                            <Button fx:id="btnExportAll" text="Eksportuj sva prisustva u PDF" styleClass="btn-primary" />
-                            <Button fx:id="btnGenerateReport" text="Generiši izvještaj" styleClass="btn-primary" />
+                        <!-- Role distribution pie chart -->
+                        <VBox spacing="8" styleClass="card" prefWidth="360">
+                            <Label text="Praktikant / Volonter" style="-fx-font-weight:bold;" />
+                            <PieChart fx:id="rolePieChart" prefHeight="200" prefWidth="320" />
                         </VBox>
+
                     </children>
                 </FlowPane>
             </children>

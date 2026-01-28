@@ -11,6 +11,7 @@ import org.example.service.AttendanceService;
 import org.example.service.UserService;
 import org.example.service.AttendanceService.AttendanceRecord;
 import org.example.model.User;
+import org.example.model.Role;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +22,7 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.scene.chart.PieChart;
 
 public class DashboardCardsController {
 
@@ -34,6 +36,8 @@ public class DashboardCardsController {
     @FXML private ListView<String> listRecent;
     @FXML private Button btnExportAll;
     @FXML private Button btnGenerateReport;
+
+    @FXML private PieChart rolePieChart;
 
     private final UserService userService = new UserService();
     private final AttendanceService attendanceService = new AttendanceService();
@@ -93,11 +97,26 @@ public class DashboardCardsController {
                     return a.getUserFullName() + " - " + when;
                 }).collect(Collectors.toList());
 
+                // compute role distribution
+                long praktikant = users.stream().filter(u -> u.getRole() == Role.Praktikant).count();
+                long volonter = users.stream().filter(u -> u.getRole() == Role.Volonter).count();
+                long unknownRole = users.size() - (praktikant + volonter);
+
                 Platform.runLater(() -> {
                     if (lblTotalUsers != null) lblTotalUsers.setText(String.valueOf(totalUsers));
                     if (lblTodayCheckins != null) lblTodayCheckins.setText(String.valueOf(todayCheckins));
                     if (listSignedIn != null) listSignedIn.getItems().setAll(signedIn);
                     if (listRecent != null) listRecent.getItems().setAll(recent);
+
+                    // populate pie chart
+                    if (rolePieChart != null) {
+                        rolePieChart.getData().clear();
+                        if (praktikant > 0) rolePieChart.getData().add(new PieChart.Data("Praktikant", praktikant));
+                        if (volonter > 0) rolePieChart.getData().add(new PieChart.Data("Volonter", volonter));
+                        if (unknownRole > 0) rolePieChart.getData().add(new PieChart.Data("Nepoznato", unknownRole));
+                        rolePieChart.setLegendVisible(true);
+                        rolePieChart.setLabelsVisible(true);
+                    }
                 });
                 return null;
             }
