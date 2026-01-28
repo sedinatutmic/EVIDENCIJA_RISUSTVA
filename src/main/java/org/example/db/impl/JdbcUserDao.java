@@ -39,7 +39,9 @@ public class JdbcUserDao implements UserDao {
         u.setFullName(rs.getString("full_name"));
         u.setEmail(rs.getString("email"));
         u.setQrValue(rs.getString("qr_value"));
-        u.setActive(rs.getInt("is_active") == 1);
+        // handle boolean compatibility between sqlite (INTEGER) and postgres (BOOLEAN)
+        boolean active = DataSourceProvider.readBooleanFromResultSet(rs, "is_active");
+        u.setActive(active);
         String created = rs.getString("created_at");
         if (created != null) {
             try {
@@ -102,7 +104,12 @@ public class JdbcUserDao implements UserDao {
             ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getQrValue());
-            ps.setInt(4, user.isActive() ? 1 : 0);
+            // handle boolean param binding
+            if (DataSourceProvider.isPostgres()) {
+                ps.setBoolean(4, user.isActive());
+            } else {
+                ps.setInt(4, user.isActive() ? 1 : 0);
+            }
             ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
             ps.setString(6, user.getAddress());
             ps.setString(7, user.getContact());
@@ -127,7 +134,11 @@ public class JdbcUserDao implements UserDao {
             ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getQrValue());
-            ps.setInt(4, user.isActive() ? 1 : 0);
+            if (DataSourceProvider.isPostgres()) {
+                ps.setBoolean(4, user.isActive());
+            } else {
+                ps.setInt(4, user.isActive() ? 1 : 0);
+            }
             ps.setString(5, user.getBirthDate() == null ? null : user.getBirthDate().toString());
             ps.setString(6, user.getAddress());
             ps.setString(7, user.getContact());

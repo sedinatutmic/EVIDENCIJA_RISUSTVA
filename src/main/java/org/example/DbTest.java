@@ -20,11 +20,10 @@ public class DbTest {
              ResultSet rs = ps.executeQuery()) {
 
             rs.next();
-            System.out.println("✅ SQLite radi! SELECT 1 = " + rs.getInt(1));
+            System.out.println("✅ DB radi! SELECT 1 = " + rs.getInt(1));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
-
