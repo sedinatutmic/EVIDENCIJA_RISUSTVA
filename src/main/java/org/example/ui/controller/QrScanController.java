@@ -19,6 +19,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import javafx.util.Duration;
 import org.example.service.AttendanceService;
 import org.example.service.UserService;
@@ -36,6 +40,7 @@ public class QrScanController implements ViewLifecycle {
     @FXML private CheckBox pauseCheckbox;
     @FXML private Label resultLabel;
     @FXML private Rectangle scanLine;
+    @FXML private ImageView placeholderImage;
 
     private final AttendanceService attendanceService = new AttendanceService();
     private final UserService userService = new UserService();
@@ -59,6 +64,24 @@ public class QrScanController implements ViewLifecycle {
         // initialize default text from FXML label if available
         if (resultLabel != null && resultLabel.getText() != null && !resultLabel.getText().isBlank()) {
             defaultResultText = resultLabel.getText();
+        }
+
+        // Try to load uploads/download.png into the placeholder ImageView; hide if missing
+        try {
+            if (placeholderImage != null) {
+                Path p = Path.of("uploads", "download.png");
+                if (Files.exists(p)) {
+                    Image img = new Image(p.toUri().toString(), true);
+                    placeholderImage.setImage(img);
+                    placeholderImage.setVisible(true);
+                } else {
+                    // if the file isn't present, keep the ImageView but hide it so UI doesn't show broken image
+                    placeholderImage.setVisible(false);
+                }
+            }
+        } catch (Exception ex) {
+            // on any error hide the placeholder so nothing breaks
+            try { if (placeholderImage != null) placeholderImage.setVisible(false); } catch (Exception ignore) {}
         }
 
         // Keep the scene listener as a fallback (in case the view is used outside NavigationService)
